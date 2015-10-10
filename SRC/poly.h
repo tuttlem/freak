@@ -4,7 +4,9 @@
 #define __freak_poly_h_
 
 #include <stdint.h>
+#include <stdio.h>
 
+#include "util.h"
 #include "fixed.h"
 
 struct _poly_scanline_t {
@@ -19,7 +21,8 @@ void freak_poly_c(int x1, int y1, int x2, int y2,
 
 void freak_poly_g(int x1, int y1, int x2, int y2,
                   int x3, int y3, int x4, int y4,
-                  uint8_t c1, uint8_t c2, uint8_t *buffer);
+                  uint8_t c1, uint8_t c2, uint8_t c3, uint8_t c4,
+                  uint8_t *buffer);
 
 void freak_poly_t(int x1, int y1, int x2, int y2,
                   int x3, int y3, int x4, int y4,
