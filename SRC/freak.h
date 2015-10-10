@@ -12,6 +12,7 @@
 #include "fixed.h"
 #include "kbd.h"
 #include "vga.h"
+#include "poly.h"
 
 
 #endif /* __freak_h_ */

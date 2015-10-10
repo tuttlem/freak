@@ -146,3 +146,4 @@ fixed fixed_sqrt(fixed n);
   modify [eax ebx ecx edx];
 
 #endif /* __freak_math_h_ */
+
