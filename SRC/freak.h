@@ -9,6 +9,7 @@
 
 #define __freak_h_
 
+#include "fixed.h"
 #include "kbd.h"
 #include "vga.h"
 

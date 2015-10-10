@@ -4,32 +4,39 @@
 
 int main(int argc, char *argv[]) {
 
-  unsigned char buf[64000];
+    unsigned char buf[64000], c;
+    fixed x = 0, y = 0, q = 0;
+    short ang = 0;
 
-  unsigned char c = 15;
-  unsigned int x = 0;
+    freak_set_mcga();
+    freak_clear_buffer(0, buf);
 
-  freak_clear_buffer(0, buf);
-  freak_set_mcga();
+    c = 0;
+    ang = 0;
 
-  for (x = 0; x < 256; x ++) {
-    freak_set_palette(x, x >> 2, x >> 2, x >> 2);
-  }
+    while (!freak_kbhit()) {
 
-  while (!freak_kbhit()) {
-    for (x = 0; x < 1000; x ++) {
-    unsigned short o = (rand() % 32000) + (rand() % 32000);
-    buf[o] = rand() % 255;
-  }
+        x = fixed_mul(fixed_cos(ang), int_to_fixed(q)) + int_to_fixed(160);
+        y = fixed_mul(fixed_sin(ang), int_to_fixed(q)) + int_to_fixed(100);
 
-    freak_wait_vsync();
-    freak_copy_buffer(freak_vga, buf);
-    freak_wait_vsync();
-    c++;
-  }
+        buf[fixed_to_int(x) + (fixed_to_int(y) * 320)] = c;
 
-  freak_set_text();
+        ang ++;
+        if (ang > 1023) { 
+            ang = 0; 
+            q++;
 
-  return 0;
-  
+            if (q > 90) { q = 0; }
+
+            freak_wait_vsync();
+            freak_copy_buffer(freak_vga, buf);
+
+            c ++;
+        }
+
+    }
+
+    freak_set_text();
+
+    return 0;
 }
