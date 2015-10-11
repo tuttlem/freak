@@ -15,16 +15,28 @@ struct _poly_scanline_t {
   int       u1, v1, u2, v2;
 };
 
-void freak_poly_c(int x1, int y1, int x2, int y2,
+void freak_tri_c(int x1, int y1, int x2, int y2, int x3, int y3,
+                 uint8_t c, uint8_t *buffer);
+
+void freak_tri_g(int x1, int y1, int x2, int y2, int x3, int y3,
+                 uint8_t c1, uint8_t c2, uint8_t c3,
+                 uint8_t *buffer);
+
+void freak_tri_t(int x1, int y1, int x2, int y2,
+                 int x3, int y3, int u1, int v1, 
+                 int u2, int v2, int u3, int v3,
+                 uint8_t *texture, uint8_t *buffer);
+
+void freak_quad_c(int x1, int y1, int x2, int y2,
                   int x3, int y3, int x4, int y4,
                   uint8_t c, uint8_t *buffer);
 
-void freak_poly_g(int x1, int y1, int x2, int y2,
+void freak_quad_g(int x1, int y1, int x2, int y2,
                   int x3, int y3, int x4, int y4,
                   uint8_t c1, uint8_t c2, uint8_t c3, uint8_t c4,
                   uint8_t *buffer);
 
-void freak_poly_t(int x1, int y1, int x2, int y2,
+void freak_quad_t(int x1, int y1, int x2, int y2,
                   int x3, int y3, int x4, int y4,
                   int u1, int v1, int u2, int v2,
                   int u3, int v3, int u4, int v4,

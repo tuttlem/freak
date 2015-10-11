@@ -198,7 +198,89 @@ void reset_poly_state() {
   }
 }
 
-void freak_poly_c(int x1, int y1, int x2, int y2,
+void freak_tri_c(int x1, int y1, int x2, int y2, int x3, int y3,
+                 uint8_t c, uint8_t *buffer) {
+  int min_y = y1, max_y = y1, y = 0;
+
+  reset_poly_state();
+
+  scanline_c(x1, y1, x2, y2, c);
+  scanline_c(x2, y2, x3, y3, c);
+  scanline_c(x3, y3, x1, y1, c);
+
+  if (y2 < min_y) { min_y = y2; }
+  if (y3 < min_y) { min_y = y3; }
+
+  if (y2 > max_y) { max_y = y2; }
+  if (y3 > max_y) { max_y = y3; }
+
+  if (min_y < 0) { min_y = 0; }
+  if (max_y > 199) { max_y = 199; }
+
+  for (y = min_y; y <= max_y; y ++) {
+    hline_c(_scanlines[y].x1, _scanlines[y].x2, y, c, buffer);
+  }
+}
+
+void freak_tri_g(int x1, int y1, int x2, int y2, int x3, int y3, 
+                 uint8_t c1, uint8_t c2, uint8_t c3, 
+                 uint8_t *buffer) {
+  int min_y = y1, max_y = y1, y = 0;
+
+  reset_poly_state();
+
+  scanline_g(x1, y1, x2, y2, c1, c2);
+  scanline_g(x2, y2, x3, y3, c2, c3);
+  scanline_g(x3, y3, x1, y1, c3, c1);
+
+  if (y2 < min_y) { min_y = y2; }
+  if (y3 < min_y) { min_y = y3; }
+
+  if (y2 > max_y) { max_y = y2; }
+  if (y3 > max_y) { max_y = y3; }
+
+  if (min_y < 0) { min_y = 0; }
+  if (max_y > 199) { max_y = 199; }
+
+  for (y = min_y; y <= max_y; y ++) {
+    hline_g(_scanlines[y].x1, _scanlines[y].x2, y, 
+            _scanlines[y].c1, _scanlines[y].c2, 
+            buffer);
+  }
+}
+
+void freak_tri_t(int x1, int y1, int x2, int y2,
+                 int x3, int y3, 
+                 int u1, int v1, int u2, int v2,
+                 int u3, int v3, 
+                 uint8_t *texture, uint8_t *buffer) {
+  int min_y = y1, max_y = y1, y = 0;
+
+  reset_poly_state();
+
+  scanline_t(x1, y1, x2, y2, u1, v1, u2, v2);
+  scanline_t(x2, y2, x3, y3, u2, v2, u3, v3);
+  scanline_t(x3, y3, x1, y1, u3, v3, u1, v1);
+
+  if (y2 < min_y) { min_y = y2; }
+  if (y3 < min_y) { min_y = y3; }
+
+  if (y2 > max_y) { max_y = y2; }
+  if (y3 > max_y) { max_y = y3; }
+
+  if (min_y < 0) { min_y = 0; }
+  if (max_y > 199) { max_y = 199; }
+
+  for (y = min_y; y <= max_y; y ++) {
+    hline_t(_scanlines[y].x1, _scanlines[y].x2, y, 
+            _scanlines[y].u1, _scanlines[y].v1, 
+            _scanlines[y].u2, _scanlines[y].v2, 
+            texture, buffer);
+  }
+
+}
+
+void freak_quad_c(int x1, int y1, int x2, int y2,
                   int x3, int y3, int x4, int y4,
                   uint8_t c, uint8_t *buffer) {
   int min_y = y1, max_y = y1, y = 0;
@@ -226,7 +308,7 @@ void freak_poly_c(int x1, int y1, int x2, int y2,
   }
 }
 
-void freak_poly_g(int x1, int y1, int x2, int y2,
+void freak_quad_g(int x1, int y1, int x2, int y2,
                   int x3, int y3, int x4, int y4,
                   uint8_t c1, uint8_t c2, uint8_t c3, uint8_t c4,
                   uint8_t *buffer) {
@@ -257,7 +339,7 @@ void freak_poly_g(int x1, int y1, int x2, int y2,
   }
 }
 
-void freak_poly_t(int x1, int y1, int x2, int y2,
+void freak_quad_t(int x1, int y1, int x2, int y2,
                   int x3, int y3, int x4, int y4,
                   int u1, int v1, int u2, int v2,
                   int u3, int v3, int u4, int v4,

@@ -76,22 +76,8 @@ void freak_set_palette(uint8_t c, uint8_t r, uint8_t g, uint8_t b);
   parm [al] [bh] [bl] [ch]      \
   modify [dx];
 
-void freak_set_palette(uint8_t c, uint8_t r, uint8_t g, uint8_t b);
-#pragma aux freak_set_palette = \
-  "mov  dx, 0x3c7"              \
-  "out  dx, al"                 \
-  "mov  dx, 0x3c9"              \
-  "mov  al, bh"                 \
-  "out  dx, al"                 \
-  "mov  al, bl"                 \
-  "out  dx, al"                 \
-  "mov  al, ch"                 \
-  "out  dx, al"                 \
-  parm [al] [bh] [bl] [ch]      \
-  modify [dx];
-
 void freak_get_palette(uint8_t c, uint8_t *r, uint8_t *g, uint8_t *b);
-#pragma aux freak_set_palette = \
+#pragma aux freak_get_palette = \
   "mov  dx, 0x3c7"              \
   "out  dx, al"                 \
   "mov  dx, 0x3c8"              \
