@@ -25,6 +25,7 @@ extern fixed _fixed_cos[];
 #define fixed_tan(t)          (fixed_div(fixed_sin(t) << 16, fixed_cos(t)) >> 16)
 
 #define ONE             int_to_fixed(1)
+#define FIXED_NEGONE    int_to_fixed(-1)
 #define FIXED_PI        205887L
 #define FIXED_2PI       411775L
 #define FIXED_E         178144L
@@ -100,7 +101,7 @@ fixed fixed_sqrt_fast(fixed n);
   modify [eax ebx ecx edx];
 
 fixed fixed_sqrt(fixed n);
-#pragma aux FixedSqrtHP =  \
+#pragma aux fixed_sqrt =   \
   "xor  eax, eax"          \
   "mov  ebx, 40000000h"    \
   "sqrtHP1: "              \
