@@ -25,6 +25,7 @@ extern fixed _fixed_cos[];
 #define fixed_tan(t)          (fixed_div(fixed_sin(t) << 16, fixed_cos(t)) >> 16)
 
 #define ONE             int_to_fixed(1)
+#define FIXED_ONE       int_to_fixed(1)
 #define FIXED_NEGONE    int_to_fixed(-1)
 #define FIXED_PI        205887L
 #define FIXED_2PI       411775L

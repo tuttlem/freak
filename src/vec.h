@@ -84,5 +84,11 @@ inline fixed vec3_len(vec3 *v) {
   return fixed_sqrt(vec3_len_sqr(v));
 }
 
+inline void vec3_normalize(vec3 *v) {
+  fixed inv_len = fixed_div(FIXED_ONE, vec3_len(v));
+  v->x = fixed_mul(v->x, inv_len);
+  v->y = fixed_mul(v->y, inv_len);
+  v->z = fixed_mul(v->z, inv_len);
+}
 
 #endif /* __freak_vec_h_ */
