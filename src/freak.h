@@ -11,6 +11,7 @@
 
 #include "fixed.h"
 #include "vec.h"
+#include "mat.h"
 
 #include "kbd.h"
 #include "vga.h"
