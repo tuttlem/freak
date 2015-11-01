@@ -45,6 +45,10 @@ fixed fixed_mul(fixed a, fixed b);
   value [eax]             \
   modify [eax edx];
 
+inline fixed fixed_mul3(fixed a, fixed b, fixed c) {
+  return fixed_mul(fixed_mul(a, b), c);
+}
+
 fixed fixed_div(fixed a, fixed b);
 #pragma aux fixed_div =   \
   "xor    eax, eax"       \
