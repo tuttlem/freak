@@ -13,7 +13,7 @@ void mat44_print(mat44 *m) {
   double a, b, c, d;
 
   for (y = 0; y < 4; y ++) {
-    a = fixed_to_double(m->m[0]);
+    a = fixed_to_double(m->m[o]);
     b = fixed_to_double(m->m[o + 1]);
     c = fixed_to_double(m->m[o + 2]);
     d = fixed_to_double(m->m[o + 3]);
@@ -25,13 +25,13 @@ void mat44_print(mat44 *m) {
 
 }
 
-void mat44_perspective(mat44 *m, fixed fov, fixed aspect, fixed near, fixed far) {
+void mat44_perspective(mat44 *m, fixed fov, fixed aspect, fixed near_z, fixed far_z) {
 
   fixed _fov = fixed_div(fixed_mul(FIXED_PI, fov), int_to_fixed(180));
   fixed _f = fixed_div(FIXED_ONE, fixed_tan(fixed_mul(_fov, double_to_fixed(0.5))));
 
-  fixed nf = fixed_div((far + near), (near - far));
-  fixed nfr = fixed_div(fixed_mul(fixed_mul(int_to_fixed(2), far), near), (near - far));
+  fixed nf = fixed_div((far_z + near_z), (near_z - far_z));
+  fixed nfr = fixed_div(fixed_mul(fixed_mul(int_to_fixed(2), far_z), near_z), (near_z - far_z));
   
   mat44_set(m,
             fixed_div(_f, aspect), 0 , 0           , 0  ,
