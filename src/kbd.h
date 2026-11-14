@@ -9,6 +9,27 @@
 
 #define __freak_kbd_h_
 
+#include <stdint.h>
+
+#define FREAK_KEY_ESCAPE 0x01
+#define FREAK_KEY_UP     0x48
+#define FREAK_KEY_DOWN   0x50
+#define FREAK_KEY_LEFT   0x4b
+#define FREAK_KEY_RIGHT  0x4d
+#define FREAK_KEY_A      0x1e
+#define FREAK_KEY_D      0x20
+#define FREAK_KEY_S      0x1f
+#define FREAK_KEY_W      0x11
+
+/* Installs a raw IRQ-1 handler for continuous keyboard state. */
+void freak_kbd_init(void);
+
+/* Restores BIOS keyboard handling. */
+void freak_kbd_shutdown(void);
+
+/* Returns non-zero while the key identified by an XT scan code is held. */
+uint8_t freak_key_down(uint8_t scan_code);
+
 /* freak_getch
  * Returns the next available character in the keyboard buffer; if no character
  * is available, this service will wait
