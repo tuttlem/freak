@@ -1,8 +1,8 @@
 /******************************************************************************
  * Freak timer
  *
- * A fixed-rate PIT clock for DOS/4GW programs.  The original DOS timer
- * interrupt continues to run, so DOS timekeeping remains correct.
+ * A fixed-rate PIT clock for DOS/4GW programs.  It owns IRQ 0 while active
+ * and restores the normal BIOS PIT rate and vector during shutdown.
  ******************************************************************************/
 
 #ifndef __freak_timer_h_

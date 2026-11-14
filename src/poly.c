@@ -26,7 +26,10 @@ void hline_g(int x1, int x2, int y, uint8_t c1, uint8_t c2, uint8_t *buffer) {
   uint8_t *temp;
   fixed dc, cur;
 
-  if (l == 0) { return; }
+  if (y < 0 || y >= 200 || x2 < 0 || x1 >= 320 || l <= 0) { return; }
+  if (x1 < 0) { x1 = 0; }
+  if (x2 >= 320) { x2 = 319; }
+  l = x2 - x1;
 
   temp = buffer + (x1 + (y << 6) + (y << 8));
   dc = fixed_div(int_to_fixed(c2-c1), int_to_fixed(l)); 
@@ -46,7 +49,10 @@ void hline_t(int x1, int x2, int y, int u1, int v1, int u2, int v2, uint8_t *tex
   uint8_t *temp;
   fixed du, cu, dv, cv;
 
-  if (l == 0) { return; }
+  if (y < 0 || y >= 200 || x2 < 0 || x1 >= 320 || l <= 0) { return; }
+  if (x1 < 0) { x1 = 0; }
+  if (x2 >= 320) { x2 = 319; }
+  l = x2 - x1;
 
   u = 0; 
   v = 0; 
@@ -95,8 +101,10 @@ void scanline_c(int x1, int y1, int x2, int y2, uint8_t c) {
   for (t = y1; t <= y2; t ++) {
     xi = fixed_to_int(x);
 
-    if (xi < _scanlines[t].x1) { _scanlines[t].x1 = xi; _scanlines[t].c1 = c; }
-    if (xi > _scanlines[t].x2) { _scanlines[t].x2 = xi; _scanlines[t].c1 = c; }
+    if (t >= 0 && t < 200) {
+      if (xi < _scanlines[t].x1) { _scanlines[t].x1 = xi; _scanlines[t].c1 = c; }
+      if (xi > _scanlines[t].x2) { _scanlines[t].x2 = xi; _scanlines[t].c1 = c; }
+    }
 
     x += dx;
   }
@@ -134,8 +142,10 @@ void scanline_g(int x1, int y1, int x2, int y2, uint8_t c1, uint8_t c2) {
     xi = fixed_to_int(x);
     ci = fixed_to_int(c);
 
-    if (xi < _scanlines[t].x1) { _scanlines[t].x1 = xi; _scanlines[t].c1 = ci; }
-    if (xi > _scanlines[t].x2) { _scanlines[t].x2 = xi; _scanlines[t].c2 = ci; }
+    if (t >= 0 && t < 200) {
+      if (xi < _scanlines[t].x1) { _scanlines[t].x1 = xi; _scanlines[t].c1 = ci; }
+      if (xi > _scanlines[t].x2) { _scanlines[t].x2 = xi; _scanlines[t].c2 = ci; }
+    }
 
     x += dx;
     c += dc;
@@ -181,8 +191,10 @@ void scanline_t(int x1, int y1, int x2, int y2, int u1, int v1, int u2, int v2) 
     ui = fixed_to_int(u);
     vi = fixed_to_int(v);
 
-    if (xi < _scanlines[t].x1) { _scanlines[t].x1 = xi; _scanlines[t].u1 = ui; _scanlines[t].v1 = vi; }
-    if (xi > _scanlines[t].x2) { _scanlines[t].x2 = xi; _scanlines[t].u2 = ui; _scanlines[t].v2 = vi; }
+    if (t >= 0 && t < 200) {
+      if (xi < _scanlines[t].x1) { _scanlines[t].x1 = xi; _scanlines[t].u1 = ui; _scanlines[t].v1 = vi; }
+      if (xi > _scanlines[t].x2) { _scanlines[t].x2 = xi; _scanlines[t].u2 = ui; _scanlines[t].v2 = vi; }
+    }
 
     x += dx;
     u += du;

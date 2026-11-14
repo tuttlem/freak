@@ -9,21 +9,18 @@
 #define PIC_COMMAND_PORT   0x20
 
 static volatile uint8_t key_state[128];
-static uint8_t extended_prefix;
 static int keyboard_installed;
-static void (__interrupt __far *previous_irq_1)(void);
+static unsigned short previous_selector;
+static unsigned long previous_offset;
 
-static void __interrupt __far keyboard_irq_1(void)
+static void __interrupt keyboard_irq_1(void)
 {
     uint8_t scan_code;
 
     scan_code = (uint8_t)inp(KEYBOARD_DATA_PORT);
 
-    if (scan_code == 0xe0) {
-        extended_prefix = 1;
-    } else if (scan_code != 0xe1) {
+    if (scan_code != 0xe0 && scan_code != 0xe1) {
         key_state[scan_code & 0x7f] = (scan_code & 0x80) == 0;
-        extended_prefix = 0;
     }
 
     outp(PIC_COMMAND_PORT, 0x20);
@@ -32,6 +29,8 @@ static void __interrupt __far keyboard_irq_1(void)
 void freak_kbd_init(void)
 {
     unsigned int index;
+    union REGS regs;
+    void __far *handler;
 
     if (keyboard_installed) {
         return;
@@ -40,25 +39,42 @@ void freak_kbd_init(void)
     for (index = 0; index < 128; ++index) {
         key_state[index] = 0;
     }
-    extended_prefix = 0;
+    /* DOS/4GW requires DPMI protected-mode vector services for IRQ hooks. */
+    regs.x.eax = 0x0204;
+    regs.x.ebx = 0x09;
+    int386(0x31, &regs, &regs);
+    if (regs.x.cflag) {
+        return;
+    }
+    previous_selector = (unsigned short)regs.x.ecx;
+    previous_offset = regs.x.edx;
 
-    _disable();
-    previous_irq_1 = _dos_getvect(0x09);
-    _dos_setvect(0x09, keyboard_irq_1);
+    handler = (void __far *)keyboard_irq_1;
+    regs.x.eax = 0x0205;
+    regs.x.ebx = 0x09;
+    regs.x.ecx = (unsigned long)FP_SEG(handler);
+    regs.x.edx = FP_OFF(handler);
+    int386(0x31, &regs, &regs);
+    if (regs.x.cflag) {
+        return;
+    }
     keyboard_installed = 1;
-    _enable();
 }
 
 void freak_kbd_shutdown(void)
 {
+    union REGS regs;
+
     if (!keyboard_installed) {
         return;
     }
 
-    _disable();
-    _dos_setvect(0x09, previous_irq_1);
+    regs.x.eax = 0x0205;
+    regs.x.ebx = 0x09;
+    regs.x.ecx = (unsigned long)previous_selector;
+    regs.x.edx = previous_offset;
+    int386(0x31, &regs, &regs);
     keyboard_installed = 0;
-    _enable();
 }
 
 uint8_t freak_key_down(uint8_t scan_code)

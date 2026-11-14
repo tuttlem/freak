@@ -8,13 +8,12 @@
 #define PIT_COUNTER_0    0x40
 #define PIC_COMMAND_PORT 0x20
 #define PIT_BASE_HZ      1193182UL
-#define PIT_BIOS_DIVISOR 65536UL
 
 static volatile unsigned long timer_ticks;
-static unsigned long bios_phase;
 static unsigned int timer_divisor;
 static int timer_installed;
-static void (__interrupt __far *previous_irq_0)(void);
+static unsigned short previous_selector;
+static unsigned long previous_offset;
 
 static void pit_set_divisor(unsigned int divisor)
 {
@@ -23,44 +22,52 @@ static void pit_set_divisor(unsigned int divisor)
     outp(PIT_COUNTER_0, divisor >> 8);
 }
 
-static void __interrupt __far timer_irq_0(void)
+static void __interrupt timer_irq_0(void)
 {
     ++timer_ticks;
-    bios_phase += timer_divisor;
 
-    /* The old IRQ-0 handler sends the EOI when we chain to it. */
-    if (bios_phase >= PIT_BIOS_DIVISOR) {
-        bios_phase -= PIT_BIOS_DIVISOR;
-        _chain_intr(previous_irq_0);
-    }
-
-    /* On our extra interrupts, acknowledge the PIC ourselves. */
+    /* The protected-mode handler owns this IRQ while the game is active. */
     outp(PIC_COMMAND_PORT, 0x20);
 }
 
 void freak_timer_init(unsigned int hz)
 {
     unsigned long divisor;
+    union REGS regs;
+    void __far *handler;
 
     if (timer_installed || hz == 0) {
         return;
     }
 
     divisor = PIT_BASE_HZ / hz;
-    if (divisor == 0 || divisor >= PIT_BIOS_DIVISOR) {
+    if (divisor == 0 || divisor >= 65536UL) {
         return;
     }
 
     timer_ticks = 0;
-    bios_phase = 0;
     timer_divisor = (unsigned int)divisor;
 
-    _disable();
-    previous_irq_0 = _dos_getvect(0x08);
-    _dos_setvect(0x08, timer_irq_0);
+    regs.x.eax = 0x0204;
+    regs.x.ebx = 0x08;
+    int386(0x31, &regs, &regs);
+    if (regs.x.cflag) {
+        return;
+    }
+    previous_selector = (unsigned short)regs.x.ecx;
+    previous_offset = regs.x.edx;
+
+    handler = (void __far *)timer_irq_0;
+    regs.x.eax = 0x0205;
+    regs.x.ebx = 0x08;
+    regs.x.ecx = (unsigned long)FP_SEG(handler);
+    regs.x.edx = FP_OFF(handler);
+    int386(0x31, &regs, &regs);
+    if (regs.x.cflag) {
+        return;
+    }
     pit_set_divisor(timer_divisor);
     timer_installed = 1;
-    _enable();
 }
 
 unsigned long freak_timer_ticks(void)
@@ -70,13 +77,17 @@ unsigned long freak_timer_ticks(void)
 
 void freak_timer_shutdown(void)
 {
+    union REGS regs;
+
     if (!timer_installed) {
         return;
     }
 
-    _disable();
     pit_set_divisor(0);
-    _dos_setvect(0x08, previous_irq_0);
+    regs.x.eax = 0x0205;
+    regs.x.ebx = 0x08;
+    regs.x.ecx = (unsigned long)previous_selector;
+    regs.x.edx = previous_offset;
+    int386(0x31, &regs, &regs);
     timer_installed = 0;
-    _enable();
 }
