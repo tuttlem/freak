@@ -10,6 +10,9 @@ IF ERRORLEVEL 1 GOTO DONE
 call wcc386 /d2 /3s src\vga.c -fo=bin\vga.obj
 IF ERRORLEVEL 1 GOTO DONE
 
+call wcc386 /d2 /3s src\timer.c -fo=bin\timer.obj
+IF ERRORLEVEL 1 GOTO DONE
+
 call wcc386 /d2 /3s src\poly.c -fo=bin\poly.obj
 IF ERRORLEVEL 1 GOTO DONE
 

@@ -14,6 +14,7 @@
 #include "mat.h"
 
 #include "kbd.h"
+#include "timer.h"
 #include "vga.h"
 #include "poly.h"
 
