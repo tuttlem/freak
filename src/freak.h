@@ -17,6 +17,9 @@
 #include "timer.h"
 #include "vga.h"
 #include "poly.h"
+#include "draw.h"
+#include "physics.h"
+#include "audio.h"
 
 
 #endif /* __freak_h_ */

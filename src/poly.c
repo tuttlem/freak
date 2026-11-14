@@ -5,7 +5,14 @@ struct _poly_scanline_t _scanlines[200];
 
 void hline_c(int x1, int x2, int y, uint8_t c, uint8_t *buffer) {
   int l = x2 - x1;
-  uint8_t *temp = buffer + (x1 + (y << 6) + (y << 8));
+  uint8_t *temp;
+
+  if (y < 0 || y >= 200 || x2 < 0 || x1 >= 320) { return; }
+  if (x1 < 0) { x1 = 0; }
+  if (x2 >= 320) { x2 = 319; }
+
+  l = x2 - x1;
+  temp = buffer + (x1 + (y << 6) + (y << 8));
 
   while (l >= 0) {
     *temp = c;
