@@ -347,3 +347,27 @@ fixed _fixed_cos[1024] = {
          65221,      65259,      65294,      65328,      65359,      65387, 
          65413,      65436,      65457,      65476,      65492,      65505, 
          65516,      65525,      65531,      65535 };
+
+static fixed interpolate_table(fixed *table, fixed angle)
+{
+  int index;
+  unsigned int fraction;
+  fixed from;
+  fixed to;
+
+  index = (int)((angle >> 16) & 1023);
+  fraction = (unsigned int)(angle & 0xffff);
+  from = table[index];
+  to = table[(index + 1) & 1023];
+  return from + (fixed)(((long)(to - from) * fraction) >> 16);
+}
+
+fixed fixed_sin_interp(fixed angle)
+{
+  return interpolate_table(_fixed_sin, angle);
+}
+
+fixed fixed_cos_interp(fixed angle)
+{
+  return interpolate_table(_fixed_cos, angle);
+}

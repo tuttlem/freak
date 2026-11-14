@@ -24,6 +24,10 @@ extern fixed _fixed_cos[];
 #define fixed_cos(t)          (_fixed_cos[t & 1023])
 #define fixed_tan(t)          (fixed_div(fixed_sin(t) << 16, fixed_cos(t)) >> 16)
 
+/* Takes a 16.16 table position and linearly interpolates adjacent samples. */
+fixed fixed_sin_interp(fixed angle);
+fixed fixed_cos_interp(fixed angle);
+
 #define ONE             int_to_fixed(1)
 #define FIXED_ZERO      0
 #define FIXED_ONE       int_to_fixed(1)
