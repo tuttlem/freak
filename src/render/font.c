@@ -31,3 +31,25 @@ void freak_font_text(uint8_t *buffer, int x, int y,
         x += font->width;
     }
 }
+
+struct freak_text_size freak_font_measure(const struct freak_font *font,
+                                          const char *text) {
+    struct freak_text_size size = {0, 0};
+    int line_width = 0;
+    if (font == 0 || text == 0)
+        return size;
+    size.height = font->height;
+    while (*text) {
+        if (*text == '\n') {
+            if (line_width > size.width)
+                size.width = line_width;
+            line_width = 0;
+            size.height += font->height;
+        } else
+            line_width += font->width;
+        ++text;
+    }
+    if (line_width > size.width)
+        size.width = line_width;
+    return size;
+}
