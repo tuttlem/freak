@@ -1,7 +1,9 @@
 DOSBOX ?= dosbox
 DOS_ROOT ?= /home/michael/Applications/dosbox
 
-.PHONY: dos run test clean
+FORMAT_FILES = src/core/rng.c src/core/rng.h
+
+.PHONY: dos run test lint format clean
 
 # The batch files remain the canonical Watcom build; Make simply provides the
 # same host-side DOSBox workflow used by the racer projects.
@@ -15,6 +17,14 @@ run: dos
 
 # Builds the DOS test and gallery executables without launching one.
 test: dos
+
+# New utility modules opt into this as they are added; legacy sources stay
+# untouched until we deliberately reformat them.
+lint:
+	clang-format --dry-run --Werror $(FORMAT_FILES)
+
+format:
+	clang-format -i $(FORMAT_FILES)
 
 clean:
 	rm -rf bin

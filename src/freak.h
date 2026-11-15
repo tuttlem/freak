@@ -11,6 +11,7 @@
 
 #include "core/fixed.h"
 #include "core/noise.h"
+#include "core/rng.h"
 #include "core/vec.h"
 #include "core/mat.h"
 
