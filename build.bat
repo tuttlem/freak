@@ -22,6 +22,9 @@ IF ERRORLEVEL 1 GOTO DONE
 call wcc386 /d2 /3s src\physics.c -fo=bin\physics.obj
 IF ERRORLEVEL 1 GOTO DONE
 
+call wcc386 /d2 /3s src\camera.c -fo=bin\camera.obj
+IF ERRORLEVEL 1 GOTO DONE
+
 call wcc386 /d2 /3s src\audio.c -fo=bin\audio.obj
 IF ERRORLEVEL 1 GOTO DONE
 

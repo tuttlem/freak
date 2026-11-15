@@ -21,7 +21,7 @@ void vec3_zero(vec3 *v);
   "mov ecx, 3"           \
   "rep stosd"            \
   parm [edi]             \
-  modify [eax ecx];
+  modify [eax ecx edi];
 
 void vec3_set(vec3* v, fixed x, fixed y, fixed z);
 #pragma aux vec3_set =                       \
@@ -30,7 +30,8 @@ void vec3_set(vec3* v, fixed x, fixed y, fixed z);
   "mov [edi], ebx"                           \
   "add edi, 4"                               \
   "mov [edi], ecx"                           \
-  parm [edi] [eax] [ebx] [ecx];
+  parm [edi] [eax] [ebx] [ecx]                \
+  modify [edi];
 
 inline void vec3_neg(vec3 *c) {
   c->x = fixed_mul(c->x, FIXED_NEGONE);

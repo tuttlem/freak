@@ -33,7 +33,7 @@ void mat44_zero(mat44 *m);
   "mov ecx, 0x10"        \
   "rep stosd"            \
   parm [edi]             \
-  modify [eax ecx];
+  modify [eax ecx edi];
 
 void mat44_identity(mat44 *m);
 #pragma aux mat44_identity =   \
@@ -41,7 +41,7 @@ void mat44_identity(mat44 *m);
   "mov ecx, 0x10"              \
   "rep movsd"                  \
   parm [edi]                   \
-  modify [esi ecx];
+  modify [esi ecx edi];
 
 inline void mat44_set(mat44 *m,
                       fixed m00, fixed m01, fixed m02, fixed m03,

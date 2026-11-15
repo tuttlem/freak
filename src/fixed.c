@@ -359,7 +359,11 @@ static fixed interpolate_table(fixed *table, fixed angle)
   fraction = (unsigned int)(angle & 0xffff);
   from = table[index];
   to = table[(index + 1) & 1023];
-  return from + (fixed)(((long)(to - from) * fraction) >> 16);
+  /* Keep this product signed.  With an unsigned fraction, a descending
+     table interval (for example cosine just right of zero) was shifted as
+     unsigned and became a +65535 adjustment instead of a small negative
+     one. */
+  return from + (((to - from) * (fixed)fraction) >> 16);
 }
 
 fixed fixed_sin_interp(fixed angle)

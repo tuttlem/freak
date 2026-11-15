@@ -19,6 +19,7 @@
 #include "poly.h"
 #include "draw.h"
 #include "physics.h"
+#include "camera.h"
 #include "audio.h"
 
 

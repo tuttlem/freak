@@ -51,7 +51,7 @@ void freak_clear_buffer(uint8_t c, uint8_t *buf);
   "mov  ax, bx"                  \
   "mov  ecx, 16000"              \
   "rep  stosd"                   \
-  modify [eax ebx ecx]           \
+  modify [eax ebx ecx edi]       \
   parm [al] [edi]; 
 
 /** Copies a buffer onto another */
@@ -59,7 +59,7 @@ void freak_copy_buffer(uint8_t *dest, uint8_t *src);
 #pragma aux freak_copy_buffer = \
   "mov  ecx, 16000"             \
   "rep  movsd"                  \
-  modify [ecx]                  \
+  modify [ecx edi esi]          \
   parm [edi] [esi];
 
 void freak_set_palette(uint8_t c, uint8_t r, uint8_t g, uint8_t b);
