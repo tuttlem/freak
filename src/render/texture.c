@@ -268,31 +268,35 @@ void freak_texture_marble(struct freak_texture *texture, unsigned int seed,
     }
 }
 
-void freak_texture_plasma(struct freak_texture *texture, unsigned int time,
+void freak_texture_plasma(struct freak_texture *texture, uint8_t *c1,
+                          uint8_t *c2, uint8_t *c3, uint8_t *c4,
                           uint8_t palette_base, uint8_t palette_range)
 {
     int x;
     int y;
-    int tick;
     int wave;
 
-    if (texture == 0 || texture->pixels == 0 || palette_range == 0) {
+    if (texture == 0 || texture->pixels == 0 || c1 == 0 || c2 == 0 ||
+        c3 == 0 || c4 == 0 || palette_range == 0) {
         return;
     }
-    tick = (int)(time & 1023U);
     for (y = 0; y < FREAK_TEXTURE_HEIGHT; ++y) {
         for (x = 0; x < FREAK_TEXTURE_WIDTH; ++x) {
-            wave = fixed_sin((x * 4 + tick) & 1023) +
-                   fixed_sin((y * 5 - tick * 2) & 1023) +
-                   fixed_sin(((x + y) * 3 + tick * 3) & 1023) +
-                   fixed_sin(((x - y) * 2 - tick) & 1023);
+            wave = fixed_sin((x * 4 + ((int)*c1 << 2)) & 1023) +
+                   fixed_sin((y * 5 + ((int)*c2 << 2)) & 1023) +
+                   fixed_sin(((x + y) * 3 + ((int)*c3 << 2)) & 1023) +
+                   fixed_sin(((x - y) * 2 + ((int)*c4 << 2)) & 1023);
             freak_texture_pixel(texture, x, y) = texture_palette_colour(
                 wave / 4, palette_base, palette_range);
         }
     }
+    *c1 += 1;
+    *c2 += 2;
+    *c3 += 3;
+    *c4 += 5;
 }
 
-void freak_texture_fire_step(struct freak_texture *destination,
+void freak_texture_smudge_up(struct freak_texture *destination,
                              const struct freak_texture *source,
                              unsigned int seed, uint8_t palette_base,
                              uint8_t palette_range)

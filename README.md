@@ -25,3 +25,7 @@ for hot loops. The page must be valid; it can be read or assigned to directly.
 Run `make run` (or `test.bat`, then `textures.exe`) for a Mode 13h gallery. The top row is
 raw noise, value noise, fBm, asphalt, and dirt; the bottom row is grass,
 clouds, marble, animated plasma, and animated fire. Press any key to leave.
+
+Plasma takes four mutable byte phase counters (`c1` through `c4`) and advances
+them at independent rates. `freak_texture_smudge_up` is the shared upward,
+cooling palette-ramp operation used for fire today and smoke tomorrow.

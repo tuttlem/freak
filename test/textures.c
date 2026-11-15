@@ -21,6 +21,10 @@ static struct freak_texture pages[GALLERY_PAGES];
 static struct freak_texture fire_page;
 static struct freak_texture *fire_current;
 static struct freak_texture *fire_next;
+static unsigned char c1;
+static unsigned char c2;
+static unsigned char c3;
+static unsigned char c4;
 
 static void set_palette_range(int first, int count, int red, int green,
                               int blue, int red_step, int green_step,
@@ -133,9 +137,13 @@ int main(void)
     freak_set_mcga();
     set_gallery_palette();
     tick = 0;
+    c1 = 0;
+    c2 = 0;
+    c3 = 0;
+    c4 = 0;
     while (!freak_kbhit()) {
-        freak_texture_plasma(&pages[8], tick * 3U, 96, 16);
-        freak_texture_fire_step(fire_next, fire_current, tick, 112, 16);
+        freak_texture_plasma(&pages[8], &c1, &c2, &c3, &c4, 96, 16);
+        freak_texture_smudge_up(fire_next, fire_current, tick, 112, 16);
         swap = fire_current;
         fire_current = fire_next;
         fire_next = swap;

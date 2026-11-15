@@ -51,11 +51,12 @@ void freak_texture_clouds(struct freak_texture *texture, unsigned int seed,
 void freak_texture_marble(struct freak_texture *texture, unsigned int seed,
                           uint8_t palette_base, uint8_t palette_range);
 
-/* Animated effect writers. Plasma is stateless. Fire may use one texture for
-   both source and destination, or ping-pong between two texture pages. */
-void freak_texture_plasma(struct freak_texture *texture, unsigned int time,
+/* Animated effect writers. Plasma advances four independent byte phase clocks.
+   Smudge may use one texture for source/destination or ping-pong pages. */
+void freak_texture_plasma(struct freak_texture *texture, uint8_t *c1,
+                          uint8_t *c2, uint8_t *c3, uint8_t *c4,
                           uint8_t palette_base, uint8_t palette_range);
-void freak_texture_fire_step(struct freak_texture *destination,
+void freak_texture_smudge_up(struct freak_texture *destination,
                              const struct freak_texture *source,
                              unsigned int seed, uint8_t palette_base,
                              uint8_t palette_range);
