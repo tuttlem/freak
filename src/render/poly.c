@@ -3,6 +3,14 @@
 
 struct _poly_scanline_t _scanlines[200];
 
+struct _poly_perspective_scanline_t {
+  int x1, x2;
+  fixed q1, uq1, vq1;
+  fixed q2, uq2, vq2;
+};
+
+static struct _poly_perspective_scanline_t _perspective_scanlines[200];
+
 void hline_c(int x1, int x2, int y, uint8_t c, uint8_t *buffer) {
   int l = x2 - x1;
   uint8_t *temp;
@@ -30,6 +38,7 @@ void hline_g(int x1, int x2, int y, uint8_t c1, uint8_t c2, uint8_t *buffer) {
   if (x1 < 0) { x1 = 0; }
   if (x2 >= 320) { x2 = 319; }
   l = x2 - x1;
+  if (l <= 0) { return; }
 
   temp = buffer + (x1 + (y << 6) + (y << 8));
   dc = fixed_div(int_to_fixed(c2-c1), int_to_fixed(l)); 
@@ -45,6 +54,8 @@ void hline_g(int x1, int x2, int y, uint8_t c1, uint8_t c2, uint8_t *buffer) {
 
 void hline_t(int x1, int x2, int y, int u1, int v1, int u2, int v2, uint8_t *texture, uint8_t *buffer) {
   int l = x2 - x1;
+  int original_x1 = x1;
+  int original_l = l;
   int u, v, tofs;
   uint8_t *temp;
   fixed du, cu, dv, cv;
@@ -53,6 +64,7 @@ void hline_t(int x1, int x2, int y, int u1, int v1, int u2, int v2, uint8_t *tex
   if (x1 < 0) { x1 = 0; }
   if (x2 >= 320) { x2 = 319; }
   l = x2 - x1;
+  if (l <= 0) { return; }
 
   u = 0; 
   v = 0; 
@@ -60,14 +72,26 @@ void hline_t(int x1, int x2, int y, int u1, int v1, int u2, int v2, uint8_t *tex
   
   temp = buffer + (x1 + (y << 6) + (y << 8));
   
-  du = fixed_div(int_to_fixed(u2-u1), int_to_fixed(l));
+  /* Interpolate over the unclipped span, then advance to the clipped edge.
+     Rescaling over the shortened span made textures pull toward screen edges. */
+  du = fixed_div(int_to_fixed(u2-u1), int_to_fixed(original_l));
   cu = int_to_fixed(u1);
-  dv = fixed_div(int_to_fixed(v2-v1), int_to_fixed(l));
+  dv = fixed_div(int_to_fixed(v2-v1), int_to_fixed(original_l));
   cv = int_to_fixed(v1);
+  if (x1 != original_x1) {
+    cu += fixed_mul(du, int_to_fixed(x1 - original_x1));
+    cv += fixed_mul(dv, int_to_fixed(x1 - original_x1));
+  }
 
   while (l > 0) {
     u = fixed_to_int(cu);
     v = fixed_to_int(cv);
+    /* Perspective-projected polygons may be screen-clipped while their
+       texture endpoints remain outside the source image. */
+    if (u < 0) { u = 0; }
+    if (u > 255) { u = 255; }
+    if (v < 0) { v = 0; }
+    if (v > 255) { v = 255; }
     tofs = u + (v << 8);
 
     cu += du;
@@ -297,6 +321,186 @@ void freak_tri_t(int x1, int y1, int x2, int y2,
             texture, buffer);
   }
 
+}
+
+static void reset_perspective_state(void) {
+  int y;
+
+  for (y = 0; y < 200; ++y) {
+    _perspective_scanlines[y].x1 = 100000;
+    _perspective_scanlines[y].x2 = -100000;
+  }
+}
+
+static void scanline_pt(int x1, int y1, fixed q1, fixed uq1, fixed vq1,
+                        int x2, int y2, fixed q2, fixed uq2, fixed vq2) {
+  int t;
+  int xi;
+  int swap;
+  fixed x;
+  fixed dx;
+  fixed q;
+  fixed uq;
+  fixed vq;
+  fixed dq;
+  fixed duq;
+  fixed dvq;
+
+  if (y1 == y2) { return; }
+  if (y1 > y2) {
+    swap = x1; x1 = x2; x2 = swap;
+    swap = y1; y1 = y2; y2 = swap;
+    q = q1; q1 = q2; q2 = q;
+    uq = uq1; uq1 = uq2; uq2 = uq;
+    vq = vq1; vq1 = vq2; vq2 = vq;
+  }
+
+  dx = fixed_div(int_to_fixed(x2 - x1), int_to_fixed(y2 - y1));
+  dq = fixed_div(q2 - q1, int_to_fixed(y2 - y1));
+  duq = fixed_div(uq2 - uq1, int_to_fixed(y2 - y1));
+  dvq = fixed_div(vq2 - vq1, int_to_fixed(y2 - y1));
+  x = int_to_fixed(x1);
+  q = q1;
+  uq = uq1;
+  vq = vq1;
+
+  for (t = y1; t <= y2; ++t) {
+    xi = fixed_to_int(x);
+    if (t >= 0 && t < 200) {
+      if (xi < _perspective_scanlines[t].x1) {
+        _perspective_scanlines[t].x1 = xi;
+        _perspective_scanlines[t].q1 = q;
+        _perspective_scanlines[t].uq1 = uq;
+        _perspective_scanlines[t].vq1 = vq;
+      }
+      if (xi > _perspective_scanlines[t].x2) {
+        _perspective_scanlines[t].x2 = xi;
+        _perspective_scanlines[t].q2 = q;
+        _perspective_scanlines[t].uq2 = uq;
+        _perspective_scanlines[t].vq2 = vq;
+      }
+    }
+    x += dx;
+    q += dq;
+    uq += duq;
+    vq += dvq;
+  }
+}
+
+static void hline_pt(int x1, int x2, int y,
+                     fixed q1, fixed uq1, fixed vq1,
+                     fixed q2, fixed uq2, fixed vq2,
+                     uint8_t *texture, uint8_t *buffer) {
+  int original_x1;
+  int original_length;
+  int length;
+  int block;
+  int pixel;
+  int u_start;
+  int v_start;
+  int u_end;
+  int v_end;
+  int u;
+  int v;
+  fixed dq;
+  fixed duq;
+  fixed dvq;
+  uint8_t *target;
+
+  original_x1 = x1;
+  original_length = x2 - x1;
+  if (y < 0 || y >= 200 || x2 < 0 || x1 >= 320 ||
+      original_length <= 0) { return; }
+  if (x1 < 0) { x1 = 0; }
+  if (x2 >= 320) { x2 = 319; }
+  length = x2 - x1;
+  if (length <= 0) { return; }
+
+  dq = fixed_div(q2 - q1, int_to_fixed(original_length));
+  duq = fixed_div(uq2 - uq1, int_to_fixed(original_length));
+  dvq = fixed_div(vq2 - vq1, int_to_fixed(original_length));
+  if (x1 != original_x1) {
+    q1 += fixed_mul(dq, int_to_fixed(x1 - original_x1));
+    uq1 += fixed_mul(duq, int_to_fixed(x1 - original_x1));
+    vq1 += fixed_mul(dvq, int_to_fixed(x1 - original_x1));
+  }
+  target = buffer + x1 + (y << 6) + (y << 8);
+
+  while (length > 0) {
+    block = length > 4 ? 4 : length;
+    if (q1 <= 0) { return; }
+    u_start = fixed_to_int(fixed_div(uq1, q1));
+    v_start = fixed_to_int(fixed_div(vq1, q1));
+    q2 = q1 + dq * block;
+    uq2 = uq1 + duq * block;
+    vq2 = vq1 + dvq * block;
+    if (q2 <= 0) { return; }
+    u_end = fixed_to_int(fixed_div(uq2, q2));
+    v_end = fixed_to_int(fixed_div(vq2, q2));
+    for (pixel = 0; pixel < block; ++pixel) {
+      u = u_start + ((u_end - u_start) * pixel) / block;
+      v = v_start + ((v_end - v_start) * pixel) / block;
+      if (u < 0) { u = 0; }
+      if (u > 255) { u = 255; }
+      if (v < 0) { v = 0; }
+      if (v > 255) { v = 255; }
+      *target++ = texture[u + (v << 8)];
+    }
+    q1 = q2;
+    uq1 = uq2;
+    vq1 = vq2;
+    length -= block;
+  }
+}
+
+void freak_tri_pt(int x1, int y1, fixed z1, int u1, int v1,
+                  int x2, int y2, fixed z2, int u2, int v2,
+                  int x3, int y3, fixed z3, int u3, int v3,
+                  uint8_t *texture, uint8_t *buffer) {
+  fixed q1;
+  fixed q2;
+  fixed q3;
+  fixed uq1;
+  fixed uq2;
+  fixed uq3;
+  fixed vq1;
+  fixed vq2;
+  fixed vq3;
+  int min_y;
+  int max_y;
+  int y;
+
+  if (z1 <= 0 || z2 <= 0 || z3 <= 0) { return; }
+  q1 = fixed_div(FIXED_ONE, z1);
+  q2 = fixed_div(FIXED_ONE, z2);
+  q3 = fixed_div(FIXED_ONE, z3);
+  uq1 = fixed_mul(int_to_fixed(u1), q1);
+  uq2 = fixed_mul(int_to_fixed(u2), q2);
+  uq3 = fixed_mul(int_to_fixed(u3), q3);
+  vq1 = fixed_mul(int_to_fixed(v1), q1);
+  vq2 = fixed_mul(int_to_fixed(v2), q2);
+  vq3 = fixed_mul(int_to_fixed(v3), q3);
+
+  reset_perspective_state();
+  scanline_pt(x1, y1, q1, uq1, vq1, x2, y2, q2, uq2, vq2);
+  scanline_pt(x2, y2, q2, uq2, vq2, x3, y3, q3, uq3, vq3);
+  scanline_pt(x3, y3, q3, uq3, vq3, x1, y1, q1, uq1, vq1);
+
+  min_y = y1;
+  max_y = y1;
+  if (y2 < min_y) { min_y = y2; }
+  if (y3 < min_y) { min_y = y3; }
+  if (y2 > max_y) { max_y = y2; }
+  if (y3 > max_y) { max_y = y3; }
+  if (min_y < 0) { min_y = 0; }
+  if (max_y > 199) { max_y = 199; }
+  for (y = min_y; y <= max_y; ++y) {
+    hline_pt(_perspective_scanlines[y].x1, _perspective_scanlines[y].x2, y,
+             _perspective_scanlines[y].q1, _perspective_scanlines[y].uq1,
+             _perspective_scanlines[y].vq1, _perspective_scanlines[y].q2,
+             _perspective_scanlines[y].uq2, _perspective_scanlines[y].vq2,
+             texture, buffer);
+  }
 }
 
 void freak_quad_c(int x1, int y1, int x2, int y2,

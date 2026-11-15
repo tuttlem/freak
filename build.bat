@@ -7,6 +7,9 @@ IF ERRORLEVEL 1 GOTO DONE
 call wcc386 /d2 /3s src\core\fixed.c -fo=bin\fixed.obj
 IF ERRORLEVEL 1 GOTO DONE
 
+call wcc386 /d2 /3s src\core\noise.c -fo=bin\noise.obj
+IF ERRORLEVEL 1 GOTO DONE
+
 call wcc386 /d2 /3s src\dos\vga.c -fo=bin\vga.obj
 IF ERRORLEVEL 1 GOTO DONE
 

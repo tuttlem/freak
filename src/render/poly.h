@@ -27,6 +27,13 @@ void freak_tri_t(int x1, int y1, int x2, int y2,
                  int u2, int v2, int u3, int v3,
                  uint8_t *texture, uint8_t *buffer);
 
+/* Perspective-correct textured triangle.  z values are camera-space 16.16
+   depths; u/v address a 256x256 texture. */
+void freak_tri_pt(int x1, int y1, fixed z1, int u1, int v1,
+                  int x2, int y2, fixed z2, int u2, int v2,
+                  int x3, int y3, fixed z3, int u3, int v3,
+                  uint8_t *texture, uint8_t *buffer);
+
 void freak_quad_c(int x1, int y1, int x2, int y2,
                   int x3, int y3, int x4, int y4,
                   uint8_t c, uint8_t *buffer);

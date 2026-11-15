@@ -10,6 +10,7 @@
 #define __freak_h_
 
 #include "core/fixed.h"
+#include "core/noise.h"
 #include "core/vec.h"
 #include "core/mat.h"
 
