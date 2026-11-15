@@ -25,6 +25,7 @@
 #include "render/image.h"
 #include "render/font.h"
 #include "render/debug.h"
+#include "render/transit.h"
 #include "render/texture.h"
 #include "game/physics.h"
 #include "game/camera.h"

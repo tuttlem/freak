@@ -11,6 +11,7 @@ file bin\sprite
 file bin\image
 file bin\font
 file bin\debug
+file bin\transit
 file bin\texture
 file bin\physics
 file bin\camera
