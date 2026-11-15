@@ -6,6 +6,11 @@ file bin\vga
 file bin\timer
 file bin\kbd
 file bin\draw
+file bin\palette
+file bin\sprite
+file bin\image
+file bin\font
+file bin\debug
 file bin\texture
 file bin\physics
 file bin\camera

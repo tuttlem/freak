@@ -25,6 +25,14 @@ void freak_texture_destroy(struct freak_texture *texture);
 void freak_texture_clear(struct freak_texture *texture, uint8_t colour);
 void freak_texture_copy(struct freak_texture *destination,
                         const struct freak_texture *source);
+void freak_texture_stamp_key(struct freak_texture *destination,
+                             const struct freak_texture *source,
+                             uint8_t transparent);
+void freak_texture_blit(uint8_t *buffer, int x, int y,
+                        const struct freak_texture *texture);
+void freak_texture_blit_tile(uint8_t *buffer, int left, int top, int right,
+                             int bottom, const struct freak_texture *texture,
+                             int u, int v);
 
 /* Fills a texture with deterministic value noise. scale is the size in
    pixels of one noise cell; palette_range is the number of palette entries

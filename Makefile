@@ -1,9 +1,9 @@
 DOSBOX ?= dosbox
 DOS_ROOT ?= /home/michael/Applications/dosbox
 
-FORMAT_FILES = src/core/rng.c src/core/rng.h
+FORMAT_FILES = src/core/rng.c src/core/rng.h src/render/palette.c src/render/palette.h src/render/sprite.c src/render/sprite.h src/render/image.c src/render/image.h src/render/font.c src/render/font.h src/render/debug.c src/render/debug.h
 
-.PHONY: dos run test lint format clean
+.PHONY: dos run textures utils test lint format clean
 
 # The batch files remain the canonical Watcom build; Make simply provides the
 # same host-side DOSBox workflow used by the racer projects.
@@ -12,8 +12,14 @@ dos:
 	@rg -q 'BUILD OK' bin/TEST.LOG
 
 # Launch the live 10-page procedural texture gallery.
-run: dos
+textures: dos
 	$(DOSBOX) -c "mount -u c" -c "mount c $(DOS_ROOT)" -c "set PATH=C:\\WATCOM\\BINW;%PATH%" -c "set WATCOM=C:\\WATCOM" -c "c:" -c "cd \\SRC\\FREAK" -c "BIN\\TEXTURES.EXE"
+
+run: textures
+
+# Launch the separate sprites/fonts/images/debug utility demo.
+utils: dos
+	$(DOSBOX) -c "mount -u c" -c "mount c $(DOS_ROOT)" -c "set PATH=C:\\WATCOM\\BINW;%PATH%" -c "set WATCOM=C:\\WATCOM" -c "c:" -c "cd \\SRC\\FREAK" -c "BIN\\UTILS.EXE"
 
 # Builds the DOS test and gallery executables without launching one.
 test: dos

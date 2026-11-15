@@ -25,6 +25,21 @@ IF ERRORLEVEL 1 GOTO DONE
 call wcc386 /d2 /3s src\render\draw.c -fo=bin\draw.obj
 IF ERRORLEVEL 1 GOTO DONE
 
+call wcc386 /d2 /3s src\render\palette.c -fo=bin\palette.obj
+IF ERRORLEVEL 1 GOTO DONE
+
+call wcc386 /d2 /3s src\render\sprite.c -fo=bin\sprite.obj
+IF ERRORLEVEL 1 GOTO DONE
+
+call wcc386 /d2 /3s src\render\image.c -fo=bin\image.obj
+IF ERRORLEVEL 1 GOTO DONE
+
+call wcc386 /d2 /3s src\render\font.c -fo=bin\font.obj
+IF ERRORLEVEL 1 GOTO DONE
+
+call wcc386 /d2 /3s src\render\debug.c -fo=bin\debug.obj
+IF ERRORLEVEL 1 GOTO DONE
+
 call wcc386 /d2 /3s src\render\texture.c -fo=bin\texture.obj
 IF ERRORLEVEL 1 GOTO DONE
 

@@ -80,7 +80,7 @@ void freak_get_palette(uint8_t c, uint8_t *r, uint8_t *g, uint8_t *b);
 #pragma aux freak_get_palette = \
   "mov  dx, 0x3c7"              \
   "out  dx, al"                 \
-  "mov  dx, 0x3c8"              \
+  "mov  dx, 0x3c9"              \
   "in   al, dx"                 \
   "mov  [ebx], al"              \
   "in   al, dx"                 \

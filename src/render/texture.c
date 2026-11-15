@@ -4,6 +4,7 @@
 #include "texture.h"
 #include "../core/noise.h"
 #include "../core/fixed.h"
+#include "draw.h"
 
 static int texture_seed_x(unsigned int seed)
 {
@@ -96,6 +97,41 @@ void freak_texture_copy(struct freak_texture *destination,
         destination->pixels != 0 && source->pixels != 0) {
         memcpy(destination->pixels, source->pixels, FREAK_TEXTURE_BYTES);
     }
+}
+
+void freak_texture_stamp_key(struct freak_texture *destination,
+                             const struct freak_texture *source,
+                             uint8_t transparent)
+{
+    unsigned int index;
+    if (destination == 0 || source == 0 || destination->pixels == 0 || source->pixels == 0) return;
+    for (index = 0; index < FREAK_TEXTURE_BYTES; ++index)
+        if (source->pixels[index] != transparent) destination->pixels[index] = source->pixels[index];
+}
+
+void freak_texture_blit(uint8_t *buffer, int x, int y, const struct freak_texture *texture)
+{
+    int source_x, source_y, target_x, target_y;
+    if (buffer == 0 || texture == 0 || texture->pixels == 0) return;
+    for (source_y = 0; source_y < FREAK_TEXTURE_HEIGHT; ++source_y) {
+        target_y = y + source_y; if (target_y < 0 || target_y >= FREAK_SCREEN_HEIGHT) continue;
+        for (source_x = 0; source_x < FREAK_TEXTURE_WIDTH; ++source_x) {
+            target_x = x + source_x; if (target_x >= 0 && target_x < FREAK_SCREEN_WIDTH)
+                buffer[target_y * FREAK_SCREEN_WIDTH + target_x] = freak_texture_pixel(texture, source_x, source_y);
+        }
+    }
+}
+
+void freak_texture_blit_tile(uint8_t *buffer, int left, int top, int right,
+                             int bottom, const struct freak_texture *texture,
+                             int u, int v)
+{
+    int x, y;
+    if (buffer == 0 || texture == 0 || texture->pixels == 0) return;
+    for (y = top; y <= bottom; ++y)
+        for (x = left; x <= right; ++x)
+            if (x >= 0 && x < FREAK_SCREEN_WIDTH && y >= 0 && y < FREAK_SCREEN_HEIGHT)
+                buffer[y * FREAK_SCREEN_WIDTH + x] = freak_texture_pixel(texture, u + x - left, v + y - top);
 }
 
 void freak_texture_noise(struct freak_texture *texture, unsigned int seed,

@@ -42,14 +42,13 @@ static void set_palette_range(int first, int count, int red, int green,
 
 static void set_gallery_palette(void)
 {
-    set_palette_range(16, 16, 4, 4, 4, 3, 3, 3);
+    freak_palette_greyscale(16, 16, 4, 49);
     set_palette_range(32, 16, 12, 5, 1, 3, 2, 1);
     set_palette_range(48, 16, 2, 10, 1, 1, 3, 1);
-    set_palette_range(64, 16, 8, 12, 20, 3, 3, 2);
+    freak_palette_smoke(64, 16);
     set_palette_range(80, 16, 10, 2, 16, 3, 2, 3);
     set_palette_range(96, 16, 4, 50, 28, 3, -3, 2);
-    set_palette_range(112, 8, 8, 0, 0, 7, 0, 0);
-    set_palette_range(120, 8, 63, 4, 0, 0, 8, 0);
+    freak_palette_fire(112, 16);
 }
 
 static void draw_tile(const struct freak_texture *texture, int left, int top)
@@ -144,6 +143,11 @@ int main(void)
     while (!freak_kbhit()) {
         freak_texture_plasma(&pages[8], &c1, &c2, &c3, &c4, 96, 16);
         freak_texture_smudge_up(fire_next, fire_current, tick, 112, 16);
+        /* Palette cycling animates existing pixels without touching the page. */
+        if ((tick & 3U) == 0)
+            freak_palette_rotate(96, 16, 1);
+        if ((tick & 7U) == 0)
+            freak_palette_rotate(112, 16, -1);
         swap = fire_current;
         fire_current = fire_next;
         fire_next = swap;
