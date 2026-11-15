@@ -8,7 +8,7 @@
 #ifndef __freak_camera_h_
 #define __freak_camera_h_
 
-#include "vec.h"
+#include "../core/vec.h"
 
 struct freak_camera {
     vec3 position;

@@ -6,8 +6,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "util.h"
-#include "fixed.h"
+#include "../core/util.h"
+#include "../core/fixed.h"
 
 struct _poly_scanline_t {
   int       x1, x2;   

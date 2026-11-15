@@ -5,7 +5,7 @@
 #ifndef __freak_physics_h_
 #define __freak_physics_h_
 
-#include "vec.h"
+#include "../core/vec.h"
 
 struct freak_body3 {
     vec3 position;

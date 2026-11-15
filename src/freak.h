@@ -9,18 +9,18 @@
 
 #define __freak_h_
 
-#include "fixed.h"
-#include "vec.h"
-#include "mat.h"
+#include "core/fixed.h"
+#include "core/vec.h"
+#include "core/mat.h"
 
-#include "kbd.h"
-#include "timer.h"
-#include "vga.h"
-#include "poly.h"
-#include "draw.h"
-#include "physics.h"
-#include "camera.h"
-#include "audio.h"
+#include "dos/kbd.h"
+#include "dos/timer.h"
+#include "dos/vga.h"
+#include "render/poly.h"
+#include "render/draw.h"
+#include "game/physics.h"
+#include "game/camera.h"
+#include "dos/audio.h"
 
 
 #endif /* __freak_h_ */
