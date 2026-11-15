@@ -1,9 +1,11 @@
 
 #include <malloc.h>
+#include <stdlib.h>
 
 #include "../src/freak.h"
 
-unsigned char *dbl_buffer, *texture;
+unsigned char *dbl_buffer;
+struct freak_texture texture_page;
 unsigned int ticks = 0;
 char key_char = 0x00;
 
@@ -197,11 +199,13 @@ void tri_g_die() { }
 void tri_t_init() { 
     int x, y;
 
-    texture = (unsigned char *)malloc(256 * 256);
+    if (!freak_texture_create(&texture_page)) {
+        return;
+    }
 
     for (x = 0; x < 256; x ++) {
         for (y = 0; y < 256; y ++) {
-            texture[x + (y << 8)] = 16 + ((x ^ y) % 16);
+            texture_page.pixels[x + (y << 8)] = 16 + ((x ^ y) % 16);
         }
     }
 
@@ -215,13 +219,12 @@ void tri_t_frame(unsigned int t) {
         rand() % 320, rand() % 200,
         rand() % 320, rand() % 200,
         127, 127, 255, 255, 0, 255,
-        texture, dbl_buffer
+        &texture_page, dbl_buffer
     );
 
 }
 
 void tri_t_die() { 
-    free(texture);
-    texture = NULL;
+    freak_texture_destroy(&texture_page);
 }
 

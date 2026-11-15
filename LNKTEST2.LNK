@@ -1,0 +1,17 @@
+system dos4g
+file bin\test2
+file bin\freak
+file bin\util
+file bin\vga
+file bin\timer
+file bin\kbd
+file bin\draw
+file bin\texture
+file bin\physics
+file bin\camera
+file bin\audio
+file bin\poly
+file bin\fixed
+file bin\noise
+file bin\mat
+name bin\test2

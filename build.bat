@@ -22,6 +22,9 @@ IF ERRORLEVEL 1 GOTO DONE
 call wcc386 /d2 /3s src\render\draw.c -fo=bin\draw.obj
 IF ERRORLEVEL 1 GOTO DONE
 
+call wcc386 /d2 /3s src\render\texture.c -fo=bin\texture.obj
+IF ERRORLEVEL 1 GOTO DONE
+
 call wcc386 /d2 /3s src\game\physics.c -fo=bin\physics.obj
 IF ERRORLEVEL 1 GOTO DONE
 

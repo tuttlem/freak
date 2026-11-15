@@ -19,6 +19,7 @@
 #include "dos/vga.h"
 #include "render/poly.h"
 #include "render/draw.h"
+#include "render/texture.h"
 #include "game/physics.h"
 #include "game/camera.h"
 #include "dos/audio.h"

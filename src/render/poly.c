@@ -296,9 +296,10 @@ void freak_tri_t(int x1, int y1, int x2, int y2,
                  int x3, int y3, 
                  int u1, int v1, int u2, int v2,
                  int u3, int v3, 
-                 uint8_t *texture, uint8_t *buffer) {
+                 const struct freak_texture *texture, uint8_t *buffer) {
   int min_y = y1, max_y = y1, y = 0;
 
+  if (texture == 0 || texture->pixels == 0) { return; }
   reset_poly_state();
 
   scanline_t(x1, y1, x2, y2, u1, v1, u2, v2);
@@ -318,7 +319,7 @@ void freak_tri_t(int x1, int y1, int x2, int y2,
     hline_t(_scanlines[y].x1, _scanlines[y].x2, y, 
             _scanlines[y].u1, _scanlines[y].v1, 
             _scanlines[y].u2, _scanlines[y].v2, 
-            texture, buffer);
+            texture->pixels, buffer);
   }
 
 }
@@ -440,10 +441,8 @@ static void hline_pt(int x1, int x2, int y,
     for (pixel = 0; pixel < block; ++pixel) {
       u = u_start + ((u_end - u_start) * pixel) / block;
       v = v_start + ((v_end - v_start) * pixel) / block;
-      if (u < 0) { u = 0; }
-      if (u > 255) { u = 255; }
-      if (v < 0) { v = 0; }
-      if (v > 255) { v = 255; }
+      u &= 255;
+      v &= 255;
       *target++ = texture[u + (v << 8)];
     }
     q1 = q2;
@@ -456,7 +455,7 @@ static void hline_pt(int x1, int x2, int y,
 void freak_tri_pt(int x1, int y1, fixed z1, int u1, int v1,
                   int x2, int y2, fixed z2, int u2, int v2,
                   int x3, int y3, fixed z3, int u3, int v3,
-                  uint8_t *texture, uint8_t *buffer) {
+                  const struct freak_texture *texture, uint8_t *buffer) {
   fixed q1;
   fixed q2;
   fixed q3;
@@ -470,7 +469,8 @@ void freak_tri_pt(int x1, int y1, fixed z1, int u1, int v1,
   int max_y;
   int y;
 
-  if (z1 <= 0 || z2 <= 0 || z3 <= 0) { return; }
+  if (z1 <= 0 || z2 <= 0 || z3 <= 0 || texture == 0 ||
+      texture->pixels == 0) { return; }
   q1 = fixed_div(FIXED_ONE, z1);
   q2 = fixed_div(FIXED_ONE, z2);
   q3 = fixed_div(FIXED_ONE, z3);
@@ -499,7 +499,7 @@ void freak_tri_pt(int x1, int y1, fixed z1, int u1, int v1,
              _perspective_scanlines[y].q1, _perspective_scanlines[y].uq1,
              _perspective_scanlines[y].vq1, _perspective_scanlines[y].q2,
              _perspective_scanlines[y].uq2, _perspective_scanlines[y].vq2,
-             texture, buffer);
+             texture->pixels, buffer);
   }
 }
 
@@ -566,9 +566,10 @@ void freak_quad_t(int x1, int y1, int x2, int y2,
                   int x3, int y3, int x4, int y4,
                   int u1, int v1, int u2, int v2,
                   int u3, int v3, int u4, int v4,
-                  uint8_t *texture, uint8_t *buffer) {
+                  const struct freak_texture *texture, uint8_t *buffer) {
   int min_y = y1, max_y = y1, y = 0;
 
+  if (texture == 0 || texture->pixels == 0) { return; }
   reset_poly_state();
 
   scanline_t(x1, y1, x2, y2, u1, v1, u2, v2);
@@ -591,7 +592,7 @@ void freak_quad_t(int x1, int y1, int x2, int y2,
     hline_t(_scanlines[y].x1, _scanlines[y].x2, y, 
             _scanlines[y].u1, _scanlines[y].v1, 
             _scanlines[y].u2, _scanlines[y].v2, 
-            texture, buffer);
+            texture->pixels, buffer);
   }
 
 }
