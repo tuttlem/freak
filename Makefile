@@ -1,7 +1,7 @@
 DOSBOX ?= dosbox
 DOS_ROOT ?= /home/michael/Applications/dosbox
 
-FORMAT_FILES = src/core/rng.c src/core/rng.h src/render/palette.c src/render/palette.h src/render/sprite.c src/render/sprite.h src/render/image.c src/render/image.h src/render/font.c src/render/font.h src/render/debug.c src/render/debug.h src/render/transit.c src/render/transit.h src/ui/menu.c src/ui/menu.h
+FORMAT_FILES = src/core/rng.c src/core/rng.h src/render/palette.c src/render/palette.h src/render/sprite.c src/render/sprite.h src/render/image.c src/render/image.h src/render/font.c src/render/font.h src/render/debug.c src/render/debug.h src/render/transit.c src/render/transit.h src/ui/dialog.c src/ui/dialog.h src/ui/menu.c src/ui/menu.h test/menu.c
 
 .PHONY: dos run textures utils menu test lint format clean
 

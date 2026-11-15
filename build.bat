@@ -46,6 +46,9 @@ IF ERRORLEVEL 1 GOTO DONE
 call wcc386 /d2 /3s src\ui\menu.c -fo=bin\menu.obj
 IF ERRORLEVEL 1 GOTO DONE
 
+call wcc386 /d2 /3s src\ui\dialog.c -fo=bin\dialog.obj
+IF ERRORLEVEL 1 GOTO DONE
+
 call wcc386 /d2 /3s src\render\texture.c -fo=bin\texture.obj
 IF ERRORLEVEL 1 GOTO DONE
 
