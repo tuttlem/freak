@@ -9,7 +9,7 @@ static const unsigned char sprite_bits[64] = {
 };
 static const unsigned char font_a[8] = {24,36,66,126,66,66,66,0};
 
-int main(void)
+int freak_demo_utilities(void)
 {
     unsigned char *screen;
     unsigned char *from;
@@ -24,7 +24,6 @@ int main(void)
     from = (unsigned char *)malloc(64000U);
     to = (unsigned char *)malloc(64000U);
     if (screen == 0 || from == 0 || to == 0) return 1;
-    freak_set_mcga();
     freak_palette_greyscale(16, 16, 4, 56);
     freak_palette_fire(32, 16);
     freak_transition_palette_capture(&palette, 0, 48);
@@ -74,7 +73,6 @@ int main(void)
         ++tick;
     }
     freak_getch();
-    freak_set_text();
     free(from);
     free(to);
     free(screen);

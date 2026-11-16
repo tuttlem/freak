@@ -22,9 +22,13 @@ the actual VGA palette.
 `freak_texture_pixel(texture, u, v)` is the zero-overhead wrapped pixel macro
 for hot loops. The page must be valid; it can be read or assigned to directly.
 
-Run `make run` (or `test.bat`, then `textures.exe`) for a Mode 13h gallery. The top row is
+Run `make run` (or `scripts\\test.bat`, then `bin\\demo.exe`) to open the
+interactive demo launcher. Its Textures menu contains the Mode 13h gallery. The top row is
 raw noise, value noise, fBm, asphalt, and dirt; the bottom row is grass,
 clouds, marble, animated plasma, and animated fire. Press any key to leave.
+
+The launcher uses `W`/`S` or the arrow keys to select an item and Enter to
+open it. Escape returns to the previous menu, or exits from the root menu.
 
 Plasma takes four mutable byte phase counters (`c1` through `c4`) and advances
 them at independent rates. `freak_texture_smudge_up` is the shared upward,

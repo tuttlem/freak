@@ -121,7 +121,7 @@ static void destroy_gallery(void)
     freak_texture_destroy(&fire_page);
 }
 
-int main(void)
+int freak_demo_texture_gallery(void)
 {
     unsigned int tick;
     struct freak_texture *swap;
@@ -133,7 +133,6 @@ int main(void)
         return 1;
     }
 
-    freak_set_mcga();
     set_gallery_palette();
     tick = 0;
     c1 = 0;
@@ -157,7 +156,6 @@ int main(void)
         ++tick;
     }
     freak_getch();
-    freak_set_text();
     destroy_gallery();
     free(screen);
     return 0;

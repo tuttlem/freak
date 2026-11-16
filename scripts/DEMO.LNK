@@ -1,5 +1,8 @@
 system dos4g
+file bin\demo
+file bin\textures
 file bin\utils
+file bin\menutest
 file bin\freak
 file bin\util
 file bin\vga
@@ -13,6 +16,8 @@ file bin\font
 file bin\debug
 file bin\transit
 file bin\texture
+file bin\menu
+file bin\dialog
 file bin\physics
 file bin\camera
 file bin\audio
@@ -21,4 +26,4 @@ file bin\fixed
 file bin\noise
 file bin\rng
 file bin\mat
-name bin\utils
+name bin\demo

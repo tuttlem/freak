@@ -2,17 +2,17 @@
 #include "../src/freak.h"
 
 static const struct freak_menu_item options_items[] = {
-    {"SOUND", 2, 0, 1}, {"CONTROLS", 3, 0, 1}, {"BACK", FREAK_MENU_BACK, 0, 1}};
-static const struct freak_menu options_menu = {"OPTIONS", options_items, 3};
+    {"Sound", 2, 0, 1}, {"Controls", 3, 0, 1}, {"Back", FREAK_MENU_BACK, 0, 1}};
+static const struct freak_menu options_menu = {"Options", options_items, 3};
 static const struct freak_menu_item main_items[] = {
-    {"MESSAGE BOX", 1, 0, 1},
-    {"CONFIRM BOX", 2, 0, 1},
-    {"TEXT INPUT", 3, 0, 1},
-    {"OPTIONS", 0, &options_menu, 1},
-    {"QUIT", 9, 0, 1}};
-static const struct freak_menu main_menu = {"FREAK UI", main_items, 5};
+    {"Message box", 1, 0, 1},
+    {"Confirm box", 2, 0, 1},
+    {"Text input", 3, 0, 1},
+    {"Options", 0, &options_menu, 1},
+    {"Quit", 9, 0, 1}};
+static const struct freak_menu main_menu = {"Freak UI", main_items, 5};
 
-int main(void) {
+int freak_demo_ui(void) {
     unsigned char *screen;
     unsigned short key;
     int action;
@@ -27,7 +27,6 @@ int main(void) {
     screen = (unsigned char *)malloc(64000U);
     if (!screen)
         return 1;
-    freak_set_mcga();
     freak_palette_greyscale(0, 16, 0, 63);
     freak_menu_open(&menu, &main_menu);
     key = 0;
@@ -88,7 +87,6 @@ int main(void) {
                     key = 27;
         }
     }
-    freak_set_text();
     free(screen);
     return 0;
 }
