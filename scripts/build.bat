@@ -19,6 +19,9 @@ IF ERRORLEVEL 1 GOTO DONE
 call wcc386 /d2 /3s src\dos\timer.c -fo=bin\timer.obj
 IF ERRORLEVEL 1 GOTO DONE
 
+call wcc386 /d2 /3s src\runtime\timing.c -fo=bin\timing.obj
+IF ERRORLEVEL 1 GOTO DONE
+
 call wcc386 /d2 /3s src\input\keyboard.c -fo=bin\keyboard.obj
 IF ERRORLEVEL 1 GOTO DONE
 

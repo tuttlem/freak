@@ -18,6 +18,7 @@
 #include "input/keyboard.h"
 #include "input/input.h"
 #include "input/mouse.h"
+#include "runtime/timing.h"
 #include "dos/timer.h"
 #include "dos/vga.h"
 #include "render/poly.h"

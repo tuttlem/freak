@@ -124,6 +124,8 @@ static void destroy_gallery(void)
 int freak_demo_texture_gallery(void)
 {
     unsigned int tick;
+    unsigned long last_tick;
+    unsigned long now;
     struct freak_texture *swap;
 
     screen = (unsigned char *)malloc(64000U);
@@ -139,7 +141,16 @@ int freak_demo_texture_gallery(void)
     c2 = 0;
     c3 = 0;
     c4 = 0;
-    while (!freak_kbhit()) {
+    last_tick = freak_timer_ticks();
+    freak_input_clear_events();
+    while (1) {
+        freak_input_update();
+        if (freak_input_pressed(&freak_input_default_bindings,
+                                FREAK_ACTION_BACK))
+            break;
+        now = freak_timer_ticks();
+        tick += (unsigned int)(now - last_tick);
+        last_tick = now;
         freak_texture_plasma(&pages[8], &c1, &c2, &c3, &c4, 96, 16);
         freak_texture_smudge_up(fire_next, fire_current, tick, 112, 16);
         /* Palette cycling animates existing pixels without touching the page. */
@@ -153,9 +164,7 @@ int freak_demo_texture_gallery(void)
         draw_gallery();
         freak_wait_vsync();
         freak_copy_buffer(freak_vga, screen);
-        ++tick;
     }
-    freak_getch();
     destroy_gallery();
     free(screen);
     return 0;

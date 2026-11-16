@@ -7,6 +7,7 @@ file bin\freak
 file bin\util
 file bin\vga
 file bin\timer
+file bin\timing
 file bin\keyboard
 file bin\input
 file bin\mouse

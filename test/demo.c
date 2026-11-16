@@ -50,6 +50,7 @@ static const struct freak_menu main_menu = {"Freak demo", main_items, 4};
 static unsigned char *screen;
 static struct freak_font font = {(const unsigned char *)0x000FFA6EL, 8, 8, 0, 128};
 static struct freak_menu_style menu_style = {1, 15, 15, 1, 12, 8, 6, 10};
+static struct freak_timing demo_timing;
 
 static void set_demo_palette(void)
 {
@@ -137,7 +138,12 @@ static void run_triangles(int mode)
     }
     set_demo_palette();
     tick = 0;
-    while (!freak_kbhit()) {
+    freak_input_clear_events();
+    while (1) {
+        freak_input_update();
+        if (freak_input_pressed(&freak_input_default_bindings,
+                                FREAK_ACTION_BACK))
+            break;
         freak_clear_buffer(0, screen);
         if (mode == DEMO_FLAT_TRIANGLES)
             freak_tri_c(30 + (tick % 180), 30, 290, 90,
@@ -150,9 +156,8 @@ static void run_triangles(int mode)
                         0, 0, 255, 0, 64, 255, &texture, screen);
         freak_wait_vsync();
         freak_copy_buffer(freak_vga, screen);
-        ++tick;
+        tick += (unsigned int)freak_timing_update(&demo_timing);
     }
-    freak_getch();
     if (have_texture)
         freak_texture_destroy(&texture);
 }
@@ -173,6 +178,8 @@ static void run_cube(int mode)
     fixed face_depth[6];
     struct freak_texture texture;
     unsigned int tick;
+    unsigned long elapsed;
+    struct freak_fixed_step simulation;
     int face_order[6];
     int index, face, sort, swap, a, b, c, d;
     int have_texture;
@@ -194,7 +201,17 @@ static void run_cube(int mode)
     }
     set_demo_palette();
     tick = 0;
-    while (!freak_kbhit()) {
+    freak_fixed_step_init(&simulation, 2, 8);
+    freak_input_clear_events();
+    while (1) {
+        freak_input_update();
+        if (freak_input_pressed(&freak_input_default_bindings,
+                                FREAK_ACTION_BACK))
+            break;
+        elapsed = freak_timing_update(&demo_timing);
+        freak_fixed_step_add(&simulation, elapsed);
+        while (freak_fixed_step_take(&simulation))
+            ++tick;
         sx = fixed_sin((tick * 3) & 1023);
         cx = fixed_cos((tick * 3) & 1023);
         sy = fixed_sin((tick * 2) & 1023);
@@ -251,44 +268,40 @@ static void run_cube(int mode)
         }
         freak_wait_vsync();
         freak_copy_buffer(freak_vga, screen);
-        ++tick;
     }
-    freak_getch();
     if (have_texture)
         freak_texture_destroy(&texture);
-}
-
-static void restore_launcher_input(void)
-{
-    freak_input_init();
-    freak_input_update();
-    freak_input_clear_events();
 }
 
 static void launch_demo(int action, int *running)
 {
     if (action == DEMO_FLAT_TRIANGLES || action == DEMO_GOURAUD_TRIANGLES ||
         action == DEMO_TEXTURE_TRIANGLES) {
-        freak_input_shutdown();
+        freak_mouse_hide();
         run_triangles(action);
-        restore_launcher_input();
+        freak_mouse_show();
+        freak_input_clear_events();
     } else if (action == DEMO_CUBE_FLAT || action == DEMO_CUBE_GOURAUD ||
                action == DEMO_CUBE_TEXTURED) {
-        freak_input_shutdown();
+        freak_mouse_hide();
         run_cube(action);
-        restore_launcher_input();
+        freak_mouse_show();
+        freak_input_clear_events();
     } else if (action == DEMO_TEXTURE_GALLERY) {
-        freak_input_shutdown();
+        freak_mouse_hide();
         freak_demo_texture_gallery();
-        restore_launcher_input();
+        freak_mouse_show();
+        freak_input_clear_events();
     } else if (action == DEMO_UTILITIES) {
-        freak_input_shutdown();
+        freak_mouse_hide();
         freak_demo_utilities();
-        restore_launcher_input();
+        freak_mouse_show();
+        freak_input_clear_events();
     } else if (action == DEMO_UI) {
-        freak_input_shutdown();
+        freak_mouse_hide();
         freak_demo_ui();
-        restore_launcher_input();
+        freak_mouse_show();
+        freak_input_clear_events();
     } else if (action == DEMO_QUIT) {
         *running = 0;
     }
@@ -306,12 +319,18 @@ int main(void)
     if (!screen)
         return 1;
     freak_set_mcga();
+    if (!freak_timing_start(&demo_timing, 120)) {
+        freak_set_text();
+        free(screen);
+        return 1;
+    }
     freak_input_init();
     freak_input_update();
     freak_menu_open(&menu, &main_menu);
     running = 1;
     while (running) {
         freak_input_update();
+        freak_timing_update(&demo_timing);
         set_demo_palette();
         freak_clear_buffer(0, screen);
         draw_menu_centered(&menu);
@@ -346,6 +365,7 @@ int main(void)
         }
     }
     freak_input_shutdown();
+    freak_timing_stop();
     freak_set_text();
     free(screen);
     return 0;

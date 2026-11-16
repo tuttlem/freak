@@ -15,6 +15,8 @@ int freak_demo_utilities(void)
     unsigned char *from;
     unsigned char *to;
     unsigned int tick;
+    unsigned long last_tick;
+    unsigned long now;
     int step;
     unsigned int mode;
     struct freak_palette_snapshot palette;
@@ -48,7 +50,16 @@ int freak_demo_utilities(void)
     freak_font_char(to, 156, 92, &font, 'A', 31);
     freak_debug_cross(to, 160, 100, 40, 16);
     tick = 0;
-    while (!freak_kbhit()) {
+    last_tick = freak_timer_ticks();
+    freak_input_clear_events();
+    while (1) {
+        freak_input_update();
+        if (freak_input_pressed(&freak_input_default_bindings,
+                                FREAK_ACTION_BACK))
+            break;
+        now = freak_timer_ticks();
+        tick += (unsigned int)(now - last_tick);
+        last_tick = now;
         step = tick % 120U;
         mode = (tick / 120U) % 7U;
         if (mode < 5)
@@ -70,9 +81,7 @@ int freak_demo_utilities(void)
         }
         freak_wait_vsync();
         freak_copy_buffer(freak_vga, screen);
-        ++tick;
     }
-    freak_getch();
     free(from);
     free(to);
     free(screen);

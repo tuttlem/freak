@@ -7,8 +7,8 @@ steps should favour small, visible demos that harden reusable library pieces.
 
 - [ ] **Input polish** — keyboard state, pressed/released edges, configurable
   action bindings, and DOS mouse support are in; add joystick/gamepad support.
-- [ ] **Timing** — fixed-step update helpers, frame pacing, and FPS/profiling
-  counters.
+- [ ] **Timing** — PIT-backed elapsed ticks, fixed-step accumulation, and
+  interpolation are in; add frame pacing and FPS/profiling counters.
 - [ ] **Memory helpers** — arenas/pools for transient game objects and a
   debug allocator with leak reporting.
 - [ ] **Randomness** — seeded deterministic RNG streams for gameplay,
