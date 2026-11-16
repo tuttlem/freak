@@ -1,6 +1,6 @@
 #include "dialog.h"
 
-#include "../dos/kbd.h"
+#include "../input/keyboard.h"
 #include "../render/draw.h"
 
 static void dialog_frame(uint8_t *buffer, int x, int y, int width, int height,

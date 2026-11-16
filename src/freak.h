@@ -15,9 +15,9 @@
 #include "core/vec.h"
 #include "core/mat.h"
 
-#include "dos/kbd.h"
-#include "dos/input.h"
-#include "dos/mouse.h"
+#include "input/keyboard.h"
+#include "input/input.h"
+#include "input/mouse.h"
 #include "dos/timer.h"
 #include "dos/vga.h"
 #include "render/poly.h"

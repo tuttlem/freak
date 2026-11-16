@@ -19,13 +19,13 @@ IF ERRORLEVEL 1 GOTO DONE
 call wcc386 /d2 /3s src\dos\timer.c -fo=bin\timer.obj
 IF ERRORLEVEL 1 GOTO DONE
 
-call wcc386 /d2 /3s src\dos\kbd.c -fo=bin\kbd.obj
+call wcc386 /d2 /3s src\input\keyboard.c -fo=bin\keyboard.obj
 IF ERRORLEVEL 1 GOTO DONE
 
-call wcc386 /d2 /3s src\dos\input.c -fo=bin\input.obj
+call wcc386 /d2 /3s src\input\input.c -fo=bin\input.obj
 IF ERRORLEVEL 1 GOTO DONE
 
-call wcc386 /d2 /3s src\dos\mouse.c -fo=bin\mouse.obj
+call wcc386 /d2 /3s src\input\mouse.c -fo=bin\mouse.obj
 IF ERRORLEVEL 1 GOTO DONE
 
 call wcc386 /d2 /3s src\render\draw.c -fo=bin\draw.obj

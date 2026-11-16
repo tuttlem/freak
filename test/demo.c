@@ -258,9 +258,46 @@ static void run_cube(int mode)
         freak_texture_destroy(&texture);
 }
 
+static void restore_launcher_input(void)
+{
+    freak_input_init();
+    freak_input_update();
+    freak_input_clear_events();
+}
+
+static void launch_demo(int action, int *running)
+{
+    if (action == DEMO_FLAT_TRIANGLES || action == DEMO_GOURAUD_TRIANGLES ||
+        action == DEMO_TEXTURE_TRIANGLES) {
+        freak_input_shutdown();
+        run_triangles(action);
+        restore_launcher_input();
+    } else if (action == DEMO_CUBE_FLAT || action == DEMO_CUBE_GOURAUD ||
+               action == DEMO_CUBE_TEXTURED) {
+        freak_input_shutdown();
+        run_cube(action);
+        restore_launcher_input();
+    } else if (action == DEMO_TEXTURE_GALLERY) {
+        freak_input_shutdown();
+        freak_demo_texture_gallery();
+        restore_launcher_input();
+    } else if (action == DEMO_UTILITIES) {
+        freak_input_shutdown();
+        freak_demo_utilities();
+        restore_launcher_input();
+    } else if (action == DEMO_UI) {
+        freak_input_shutdown();
+        freak_demo_ui();
+        restore_launcher_input();
+    } else if (action == DEMO_QUIT) {
+        *running = 0;
+    }
+}
+
 int main(void)
 {
     struct freak_menu_stack menu;
+    struct freak_input_event event;
     int action;
     int hovered_item;
     int running;
@@ -280,51 +317,32 @@ int main(void)
         draw_menu_centered(&menu);
         freak_wait_vsync();
         freak_copy_buffer(freak_vga, screen);
-        hovered_item = -1;
-        if (freak_mouse_available()) {
-            hovered_item = menu_item_at(&menu, freak_mouse_x(), freak_mouse_y());
-            if (hovered_item >= 0)
-                menu.selected[menu.depth] = hovered_item;
-        }
-        if (freak_input_pressed(&freak_input_default_bindings, FREAK_ACTION_UP))
-            freak_menu_move(&menu, -1);
-        else if (freak_input_pressed(&freak_input_default_bindings, FREAK_ACTION_DOWN))
-            freak_menu_move(&menu, 1);
-        else if (freak_input_pressed(&freak_input_default_bindings, FREAK_ACTION_ACCEPT) ||
-                 (hovered_item >= 0 && freak_mouse_pressed(FREAK_MOUSE_LEFT))) {
-            action = freak_menu_accept(&menu);
-            if (action == DEMO_FLAT_TRIANGLES || action == DEMO_GOURAUD_TRIANGLES ||
-                action == DEMO_TEXTURE_TRIANGLES) {
-                freak_input_shutdown();
-                run_triangles(action);
-                freak_input_init();
-                freak_input_update();
-            } else if (action == DEMO_CUBE_FLAT || action == DEMO_CUBE_GOURAUD ||
-                       action == DEMO_CUBE_TEXTURED) {
-                freak_input_shutdown();
-                run_cube(action);
-                freak_input_init();
-                freak_input_update();
-            } else if (action == DEMO_TEXTURE_GALLERY) {
-                freak_input_shutdown();
-                freak_demo_texture_gallery();
-                freak_input_init();
-                freak_input_update();
-            } else if (action == DEMO_UTILITIES) {
-                freak_input_shutdown();
-                freak_demo_utilities();
-                freak_input_init();
-                freak_input_update();
-            } else if (action == DEMO_UI) {
-                freak_input_shutdown();
-                freak_demo_ui();
-                freak_input_init();
-                freak_input_update();
-            } else if (action == DEMO_QUIT)
-                running = 0;
-        } else if (freak_input_pressed(&freak_input_default_bindings, FREAK_ACTION_BACK)) {
-            if (freak_menu_back(&menu) == -1)
-                running = 0;
+        while (freak_input_poll_event(&event)) {
+            if (event.type == FREAK_EVENT_MOUSE_MOVE) {
+                hovered_item = menu_item_at(&menu, event.mouse_x, event.mouse_y);
+                if (hovered_item >= 0)
+                    menu.selected[menu.depth] = hovered_item;
+            } else if (event.type == FREAK_EVENT_ACTION_PRESSED) {
+                if (event.action == FREAK_ACTION_UP)
+                    freak_menu_move(&menu, -1);
+                else if (event.action == FREAK_ACTION_DOWN)
+                    freak_menu_move(&menu, 1);
+                else if (event.action == FREAK_ACTION_ACCEPT) {
+                    action = freak_menu_accept(&menu);
+                    launch_demo(action, &running);
+                } else if (event.action == FREAK_ACTION_BACK &&
+                           freak_menu_back(&menu) == -1) {
+                    running = 0;
+                }
+            } else if (event.type == FREAK_EVENT_MOUSE_BUTTON_DOWN &&
+                       event.button == FREAK_MOUSE_LEFT) {
+                hovered_item = menu_item_at(&menu, event.mouse_x, event.mouse_y);
+                if (hovered_item >= 0) {
+                    menu.selected[menu.depth] = hovered_item;
+                    action = freak_menu_accept(&menu);
+                    launch_demo(action, &running);
+                }
+            }
         }
     }
     freak_input_shutdown();

@@ -3,7 +3,7 @@
 #include <i86.h>
 #include <stdint.h>
 
-#include "kbd.h"
+#include "keyboard.h"
 
 #define KEYBOARD_DATA_PORT 0x60
 #define PIC_COMMAND_PORT   0x20
