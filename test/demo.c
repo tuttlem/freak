@@ -83,6 +83,41 @@ static void draw_menu_centered(const struct freak_menu_stack *menu)
                     &font, menu, &menu_style);
 }
 
+static int menu_item_at(const struct freak_menu_stack *menu, int mouse_x,
+                        int mouse_y)
+{
+    const struct freak_menu *active;
+    struct freak_text_size size;
+    int index;
+    int columns;
+    int width;
+    int height;
+    int left;
+    int top;
+    int item;
+
+    active = menu->menus[menu->depth];
+    size = freak_font_measure(&font, active->title);
+    columns = size.width / font.width;
+    for (index = 0; index < active->count; ++index) {
+        size = freak_font_measure(&font, active->items[index].label);
+        if (size.width / font.width > columns)
+            columns = size.width / font.width;
+    }
+    width = columns * font.width + menu_style.padding * 2;
+    height = (active->count + 1) * menu_style.row_height +
+             menu_style.padding * 2;
+    left = (320 - width) / 2;
+    top = (200 - height) / 2;
+    if (mouse_x < left + menu_style.padding ||
+        mouse_x >= left + width - menu_style.padding)
+        return -1;
+    item = (mouse_y - top - menu_style.padding) / menu_style.row_height - 1;
+    if (item < 0 || item >= active->count || !active->items[item].enabled)
+        return -1;
+    return item;
+}
+
 static void run_triangles(int mode)
 {
     struct freak_texture texture;
@@ -226,50 +261,73 @@ static void run_cube(int mode)
 int main(void)
 {
     struct freak_menu_stack menu;
-    unsigned short key;
     int action;
+    int hovered_item;
     int running;
 
     screen = (unsigned char *)malloc(64000U);
     if (!screen)
         return 1;
     freak_set_mcga();
+    freak_input_init();
+    freak_input_update();
     freak_menu_open(&menu, &main_menu);
     running = 1;
     while (running) {
+        freak_input_update();
         set_demo_palette();
         freak_clear_buffer(0, screen);
         draw_menu_centered(&menu);
         freak_wait_vsync();
         freak_copy_buffer(freak_vga, screen);
-        if (!freak_kbhit())
-            continue;
-        key = freak_getch();
-        if ((unsigned char)key == 'w' || (key >> 8) == FREAK_KEY_UP)
+        hovered_item = -1;
+        if (freak_mouse_available()) {
+            hovered_item = menu_item_at(&menu, freak_mouse_x(), freak_mouse_y());
+            if (hovered_item >= 0)
+                menu.selected[menu.depth] = hovered_item;
+        }
+        if (freak_input_pressed(&freak_input_default_bindings, FREAK_ACTION_UP))
             freak_menu_move(&menu, -1);
-        else if ((unsigned char)key == 's' || (key >> 8) == FREAK_KEY_DOWN)
+        else if (freak_input_pressed(&freak_input_default_bindings, FREAK_ACTION_DOWN))
             freak_menu_move(&menu, 1);
-        else if ((unsigned char)key == 13) {
+        else if (freak_input_pressed(&freak_input_default_bindings, FREAK_ACTION_ACCEPT) ||
+                 (hovered_item >= 0 && freak_mouse_pressed(FREAK_MOUSE_LEFT))) {
             action = freak_menu_accept(&menu);
             if (action == DEMO_FLAT_TRIANGLES || action == DEMO_GOURAUD_TRIANGLES ||
-                action == DEMO_TEXTURE_TRIANGLES)
+                action == DEMO_TEXTURE_TRIANGLES) {
+                freak_input_shutdown();
                 run_triangles(action);
-            else if (action == DEMO_CUBE_FLAT || action == DEMO_CUBE_GOURAUD ||
-                     action == DEMO_CUBE_TEXTURED)
+                freak_input_init();
+                freak_input_update();
+            } else if (action == DEMO_CUBE_FLAT || action == DEMO_CUBE_GOURAUD ||
+                       action == DEMO_CUBE_TEXTURED) {
+                freak_input_shutdown();
                 run_cube(action);
-            else if (action == DEMO_TEXTURE_GALLERY)
+                freak_input_init();
+                freak_input_update();
+            } else if (action == DEMO_TEXTURE_GALLERY) {
+                freak_input_shutdown();
                 freak_demo_texture_gallery();
-            else if (action == DEMO_UTILITIES)
+                freak_input_init();
+                freak_input_update();
+            } else if (action == DEMO_UTILITIES) {
+                freak_input_shutdown();
                 freak_demo_utilities();
-            else if (action == DEMO_UI)
+                freak_input_init();
+                freak_input_update();
+            } else if (action == DEMO_UI) {
+                freak_input_shutdown();
                 freak_demo_ui();
-            else if (action == DEMO_QUIT)
+                freak_input_init();
+                freak_input_update();
+            } else if (action == DEMO_QUIT)
                 running = 0;
-        } else if ((unsigned char)key == 8 || (unsigned char)key == 27) {
+        } else if (freak_input_pressed(&freak_input_default_bindings, FREAK_ACTION_BACK)) {
             if (freak_menu_back(&menu) == -1)
                 running = 0;
         }
     }
+    freak_input_shutdown();
     freak_set_text();
     free(screen);
     return 0;

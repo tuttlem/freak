@@ -5,8 +5,8 @@ steps should favour small, visible demos that harden reusable library pieces.
 
 ## Foundations
 
-- [ ] **Input polish** — key state tracking, edge-triggered presses, mouse
-  support, joystick/gamepad support, and configurable control mappings.
+- [ ] **Input polish** — keyboard state, pressed/released edges, configurable
+  action bindings, and DOS mouse support are in; add joystick/gamepad support.
 - [ ] **Timing** — fixed-step update helpers, frame pacing, and FPS/profiling
   counters.
 - [ ] **Memory helpers** — arenas/pools for transient game objects and a

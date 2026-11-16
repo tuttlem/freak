@@ -16,6 +16,8 @@
 #include "core/mat.h"
 
 #include "dos/kbd.h"
+#include "dos/input.h"
+#include "dos/mouse.h"
 #include "dos/timer.h"
 #include "dos/vga.h"
 #include "render/poly.h"
