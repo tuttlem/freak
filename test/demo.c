@@ -357,7 +357,9 @@ static void run_2d_sprites(void)
 {
     struct freak_camera_2d camera;
     struct freak_sprite_2d runner;
+    struct freak_sprite_2d trail;
     struct freak_sprite_animation animation;
+    struct freak_sprite_batch batch;
     unsigned long tick;
     unsigned long elapsed;
     int world_x;
@@ -386,6 +388,7 @@ static void run_2d_sprites(void)
         freak_camera_2d_set(&camera, runner.x - 160, 0);
         freak_sprite_animation_advance(&animation, elapsed);
         runner.sprite = freak_sprite_animation_frame(&animation);
+        freak_sprite_batch_reset(&batch);
 
         freak_clear_buffer(0, screen);
         for (world_x = (camera.x / 32) * 32 - 32;
@@ -403,7 +406,14 @@ static void run_2d_sprites(void)
             freak_fill_rect(screen, screen_x, screen_y,
                             screen_x + 63, screen_y + 15, 32);
         }
-        freak_sprite_2d_draw(screen, &camera, &runner);
+        /* Submit in reverse depth order; the batch resolves the draw order. */
+        for (grid = 4; grid >= 0; --grid) {
+            trail = runner;
+            trail.x -= grid * 14;
+            trail.y += grid * 3;
+            freak_sprite_batch_submit(&batch, &trail, 1, trail.y);
+        }
+        freak_sprite_batch_draw(screen, &camera, &batch);
         freak_font_text(screen, 8, 8, &font,
                         "2D camera + animated sprite  Esc: back", 15);
         freak_wait_vsync();

@@ -29,8 +29,8 @@ steps should favour small, visible demos that harden reusable library pieces.
 - [x] **2D camera** — world-to-screen transforms and a camera-relative demo.
 - [x] **Sprite animation** — timed frames, flips, positioned sprites, and an
   animated-sprite demo.
-- [ ] **Sprite batching** — layer, priority, clipping, camera transforms, and
-  optional dirty-rectangle rendering.
+- [x] **Sprite batching** — fixed-capacity layered command list with stable
+  draw ordering and camera-relative rendering.
 - [ ] **Tile maps** — 8x8/16x16 maps, scrolling cameras, multiple layers,
   parallax backgrounds, tile animation, and collision attributes.
 - [ ] **Map formats** — import TMX or a deliberately tiny native map format,

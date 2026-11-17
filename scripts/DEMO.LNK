@@ -25,6 +25,7 @@ file bin\menu
 file bin\dialog
 file bin\camera2d
 file bin\sprite2d
+file bin\batch2d
 file bin\physics
 file bin\camera
 file bin\audio
