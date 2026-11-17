@@ -26,8 +26,9 @@ steps should favour small, visible demos that harden reusable library pieces.
 
 ## 2D games and sprites
 
-- [ ] **Sprite animation** — frame strips, timed animation playback, flips,
-  rotation/scaling where practical, and an animated-sprite demo.
+- [x] **2D camera** — world-to-screen transforms and a camera-relative demo.
+- [x] **Sprite animation** — timed frames, flips, positioned sprites, and an
+  animated-sprite demo.
 - [ ] **Sprite batching** — layer, priority, clipping, camera transforms, and
   optional dirty-rectangle rendering.
 - [ ] **Tile maps** — 8x8/16x16 maps, scrolling cameras, multiple layers,
