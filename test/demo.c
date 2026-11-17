@@ -15,7 +15,8 @@
 #define DEMO_UTILITIES         9
 #define DEMO_UI               10
 #define DEMO_2D_SPRITES       11
-#define DEMO_QUIT             12
+#define DEMO_2D_TILEMAP       12
+#define DEMO_QUIT             13
 
 extern int freak_demo_texture_gallery(void);
 extern int freak_demo_utilities(void);
@@ -45,6 +46,7 @@ static const struct freak_menu_item utility_items[] = {
 static const struct freak_menu utility_menu = {"Utilities", utility_items, 3};
 static const struct freak_menu_item two_d_items[] = {
     {"Camera & animated sprites", DEMO_2D_SPRITES, 0, 1},
+    {"Scrolling tile map", DEMO_2D_TILEMAP, 0, 1},
     {"Back", FREAK_MENU_BACK, 0, 1}
 };
 static const struct freak_menu two_d_menu = {"2D", two_d_items, 2};
@@ -83,6 +85,24 @@ static const unsigned char runner_bits[4][64] = {
 static const struct freak_sprite runner_frames[4] = {
     {runner_bits[0], 8, 8, 0}, {runner_bits[1], 8, 8, 0},
     {runner_bits[2], 8, 8, 0}, {runner_bits[3], 8, 8, 0}
+};
+static const unsigned char tile_bits[3][64] = {
+    {48,48,48,48,48,48,48,48, 48,52,48,48,48,48,52,48,
+     48,48,48,52,48,48,48,48, 52,48,48,48,48,52,48,48,
+     48,48,52,48,48,48,48,52, 48,48,48,48,52,48,48,48,
+     48,52,48,48,48,48,52,48, 48,48,48,52,48,48,48,48},
+    {96,96,100,96,96,96,100,96, 96,100,96,96,100,96,96,96,
+     100,96,96,100,96,96,96,100, 96,96,100,96,96,100,96,96,
+     96,100,96,96,100,96,96,96, 100,96,96,100,96,96,96,100,
+     96,96,100,96,96,100,96,96, 96,100,96,96,100,96,96,96},
+    {0,0,0,0,0,0,0,0, 0,0,32,32,32,32,0,0,
+     0,32,36,36,36,36,32,0, 32,36,36,36,36,36,36,32,
+     32,32,32,32,32,32,32,32, 0,0,0,0,0,0,0,0,
+     0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0}
+};
+static const struct freak_sprite tile_sprites[3] = {
+    {tile_bits[0], 8, 8, 0}, {tile_bits[1], 8, 8, 0},
+    {tile_bits[2], 8, 8, 0}
 };
 
 static void set_demo_palette(void)
@@ -421,6 +441,68 @@ static void run_2d_sprites(void)
     }
 }
 
+static void run_tilemap(void)
+{
+    struct freak_tilemap map;
+    struct freak_tile_atlas atlas;
+    struct freak_camera_2d camera;
+    unsigned long last_tick;
+    unsigned long now;
+    unsigned long elapsed;
+    int x;
+    int y;
+
+    if (!freak_tilemap_init(&map, 96, 32, 8, 8, 2, 1))
+        return;
+    atlas.tiles = tile_sprites;
+    atlas.count = 3;
+    for (y = 0; y < map.height; ++y) {
+        for (x = 0; x < map.width; ++x) {
+            freak_tilemap_set(&map, 0, (uint16_t)x, (uint16_t)y,
+                              (uint16_t)(((x / 4 + y / 3) & 1) ? 0 : 1));
+            if (y == 22 || (y == 17 && (x % 12) < 6)) {
+                freak_tilemap_set(&map, 1, (uint16_t)x, (uint16_t)y, 2);
+                freak_tilemap_set_collision(&map, (uint16_t)x, (uint16_t)y, 1);
+            }
+        }
+    }
+    freak_camera_2d_set(&camera, 0, 0);
+    last_tick = freak_timer_ticks();
+    freak_input_clear_events();
+    while (1) {
+        freak_input_update();
+        if (freak_input_pressed(&freak_input_default_bindings,
+                                FREAK_ACTION_BACK))
+            break;
+        now = freak_timer_ticks();
+        elapsed = now - last_tick;
+        last_tick = now;
+        if (freak_input_down(&freak_input_default_bindings, FREAK_ACTION_LEFT))
+            camera.x -= (int)elapsed * 2;
+        if (freak_input_down(&freak_input_default_bindings, FREAK_ACTION_RIGHT))
+            camera.x += (int)elapsed * 2;
+        if (freak_input_down(&freak_input_default_bindings, FREAK_ACTION_UP))
+            camera.y -= (int)elapsed * 2;
+        if (freak_input_down(&freak_input_default_bindings, FREAK_ACTION_DOWN))
+            camera.y += (int)elapsed * 2;
+        if (camera.x < 0) camera.x = 0;
+        if (camera.y < 0) camera.y = 0;
+        if (camera.x > map.width * map.tile_width - 320)
+            camera.x = map.width * map.tile_width - 320;
+        if (camera.y > map.height * map.tile_height - 200)
+            camera.y = map.height * map.tile_height - 200;
+        set_demo_palette();
+        freak_clear_buffer(0, screen);
+        freak_tilemap_draw(screen, &camera, &map, &atlas, 0);
+        freak_tilemap_draw(screen, &camera, &map, &atlas, 1);
+        freak_font_text(screen, 8, 8, &font,
+                        "Scrolling tile map  Arrows: scroll  Esc: back", 15);
+        freak_wait_vsync();
+        freak_copy_buffer(freak_vga, screen);
+    }
+    freak_tilemap_destroy(&map);
+}
+
 static void launch_demo(int action, int *running)
 {
     if (action == DEMO_FLAT_TRIANGLES || action == DEMO_GOURAUD_TRIANGLES ||
@@ -453,6 +535,11 @@ static void launch_demo(int action, int *running)
     } else if (action == DEMO_2D_SPRITES) {
         freak_mouse_hide();
         run_2d_sprites();
+        freak_mouse_show();
+        freak_input_clear_events();
+    } else if (action == DEMO_2D_TILEMAP) {
+        freak_mouse_hide();
+        run_tilemap();
         freak_mouse_show();
         freak_input_clear_events();
     } else if (action == DEMO_QUIT) {

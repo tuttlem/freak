@@ -73,6 +73,9 @@ IF ERRORLEVEL 1 GOTO DONE
 call wcc386 /d2 /3s src\2d\batch.c -fo=bin\batch2d.obj
 IF ERRORLEVEL 1 GOTO DONE
 
+call wcc386 /d2 /3s src\2d\tilemap.c -fo=bin\tilemap2d.obj
+IF ERRORLEVEL 1 GOTO DONE
+
 call wcc386 /d2 /3s src\render\texture.c -fo=bin\texture.obj
 IF ERRORLEVEL 1 GOTO DONE
 

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <malloc.h>
 #include "image.h"
+#include "../dos/vga.h"
 
 void freak_image_destroy(struct freak_image *image) {
     if (image != 0 && image->pixels != 0) {
@@ -81,4 +82,63 @@ int freak_tga_load(const char *filename, struct freak_image *image) {
         return 0;
     }
     return 1;
+}
+
+int freak_tga_load_indexed_332(const char *filename,
+                               struct freak_indexed_image *image)
+{
+    struct freak_image source;
+    unsigned long count;
+    unsigned long index;
+    uint8_t red;
+    uint8_t green;
+    uint8_t blue;
+
+    if (image == 0)
+        return 0;
+    image->pixels = 0;
+    if (!freak_tga_load(filename, &source))
+        return 0;
+    count = (unsigned long)source.width * source.height;
+    image->pixels = (uint8_t *)malloc(count);
+    if (image->pixels == 0) {
+        freak_image_destroy(&source);
+        return 0;
+    }
+    for (index = 0; index < count; ++index) {
+        red = source.pixels[index * source.bytes_per_pixel];
+        green = source.pixels[index * source.bytes_per_pixel + 1];
+        blue = source.pixels[index * source.bytes_per_pixel + 2];
+        image->pixels[index] = (uint8_t)(((red >> 5) << 5) |
+                                         ((green >> 5) << 2) |
+                                         (blue >> 6));
+    }
+    image->width = source.width;
+    image->height = source.height;
+    freak_image_destroy(&source);
+    return 1;
+}
+
+void freak_indexed_image_destroy(struct freak_indexed_image *image)
+{
+    if (image && image->pixels) {
+        free(image->pixels);
+        image->pixels = 0;
+    }
+}
+
+void freak_image_palette_332(void)
+{
+    int index;
+    int red;
+    int green;
+    int blue;
+
+    for (index = 0; index < 256; ++index) {
+        red = (index >> 5) & 7;
+        green = (index >> 2) & 7;
+        blue = index & 3;
+        freak_set_palette((uint8_t)index, (uint8_t)(red * 9),
+                          (uint8_t)(green * 9), (uint8_t)(blue * 21));
+    }
 }

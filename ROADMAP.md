@@ -31,10 +31,9 @@ steps should favour small, visible demos that harden reusable library pieces.
   animated-sprite demo.
 - [x] **Sprite batching** — fixed-capacity layered command list with stable
   draw ordering and camera-relative rendering.
-- [ ] **Tile maps** — 8x8/16x16 maps, scrolling cameras, multiple layers,
-  parallax backgrounds, tile animation, and collision attributes.
-- [ ] **Map formats** — import TMX or a deliberately tiny native map format,
-  with a host-side converter.
+- [x] **Tile maps** — scrolling layered tile maps with collision attributes.
+- [x] **Map formats** — compact native FMP1 save/load format for tile layers
+  and collision data.
 - [ ] **Platformer toolkit** — slopes, one-way platforms, moving platforms,
   ladders, and responsive character movement.
 - [ ] **Top-down toolkit** — grid movement, pathfinding, field-of-view/fog of

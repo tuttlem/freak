@@ -24,6 +24,7 @@
 #include "2d/camera.h"
 #include "2d/sprite.h"
 #include "2d/batch.h"
+#include "2d/tilemap.h"
 #include "dos/timer.h"
 #include "dos/vga.h"
 #include "render/poly.h"
