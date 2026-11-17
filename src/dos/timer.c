@@ -75,6 +75,25 @@ unsigned long freak_timer_ticks(void)
     return timer_ticks;
 }
 
+unsigned long freak_timer_cycles(void)
+{
+    unsigned long first_tick;
+    unsigned long last_tick;
+    unsigned int counter;
+
+    if (!timer_installed)
+        return 0;
+    do {
+        first_tick = timer_ticks;
+        /* Latch counter 0 without changing the programmed PIT mode. */
+        outp(PIT_CONTROL_PORT, 0x00);
+        counter = (unsigned int)inp(PIT_COUNTER_0);
+        counter |= (unsigned int)inp(PIT_COUNTER_0) << 8;
+        last_tick = timer_ticks;
+    } while (first_tick != last_tick);
+    return first_tick * timer_divisor + (timer_divisor - counter);
+}
+
 void freak_timer_shutdown(void)
 {
     union REGS regs;

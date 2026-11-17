@@ -10,6 +10,7 @@
 #define __freak_h_
 
 #include "core/fixed.h"
+#include "core/arena.h"
 #include "core/noise.h"
 #include "core/rng.h"
 #include "core/vec.h"
@@ -19,6 +20,7 @@
 #include "input/input.h"
 #include "input/mouse.h"
 #include "runtime/timing.h"
+#include "runtime/profile.h"
 #include "dos/timer.h"
 #include "dos/vga.h"
 #include "render/poly.h"

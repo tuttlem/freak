@@ -74,3 +74,60 @@ uint16_t freak_fixed_step_alpha(const struct freak_fixed_step *step)
     return (uint16_t)((step->accumulated_ticks * 256UL) /
                       step->ticks_per_step);
 }
+
+void freak_frame_pacer_init(struct freak_frame_pacer *pacer,
+                            unsigned int tick_hz, unsigned int target_fps)
+{
+    if (pacer == 0)
+        return;
+    pacer->tick_hz = tick_hz == 0 ? 1 : tick_hz;
+    pacer->next_tick = freak_timer_ticks();
+    pacer->sample_tick = pacer->next_tick;
+    pacer->sample_frames = 0;
+    pacer->measured_fps = 0;
+    freak_frame_pacer_set_fps(pacer, target_fps);
+}
+
+void freak_frame_pacer_set_fps(struct freak_frame_pacer *pacer,
+                               unsigned int target_fps)
+{
+    if (pacer == 0)
+        return;
+    if (target_fps == 0 || target_fps > pacer->tick_hz)
+        target_fps = pacer->tick_hz;
+    pacer->target_fps = target_fps;
+    pacer->ticks_per_frame = pacer->tick_hz / target_fps;
+    if (pacer->ticks_per_frame == 0)
+        pacer->ticks_per_frame = 1;
+    pacer->next_tick = freak_timer_ticks();
+}
+
+void freak_frame_pacer_wait(struct freak_frame_pacer *pacer)
+{
+    unsigned long now;
+    unsigned long elapsed;
+
+    if (pacer == 0)
+        return;
+    pacer->next_tick += pacer->ticks_per_frame;
+    now = freak_timer_ticks();
+    if ((long)(now - pacer->next_tick) < 0)
+        freak_timing_wait_until(pacer->next_tick);
+    else
+        pacer->next_tick = now;
+
+    ++pacer->sample_frames;
+    now = freak_timer_ticks();
+    elapsed = now - pacer->sample_tick;
+    if (elapsed >= pacer->tick_hz) {
+        pacer->measured_fps = (unsigned int)
+            ((unsigned long)pacer->sample_frames * pacer->tick_hz / elapsed);
+        pacer->sample_frames = 0;
+        pacer->sample_tick = now;
+    }
+}
+
+unsigned int freak_frame_pacer_fps(const struct freak_frame_pacer *pacer)
+{
+    return pacer == 0 ? 0 : pacer->measured_fps;
+}

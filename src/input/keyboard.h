@@ -12,7 +12,9 @@
 #include <stdint.h>
 
 #define FREAK_KEY_ESCAPE 0x01
+#define FREAK_KEY_0      0x0b
 #define FREAK_KEY_BACKSPACE 0x0e
+#define FREAK_KEY_R      0x13
 #define FREAK_KEY_ENTER  0x1c
 #define FREAK_KEY_UP     0x48
 #define FREAK_KEY_DOWN   0x50

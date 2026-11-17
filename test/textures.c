@@ -7,6 +7,7 @@
  ******************************************************************************/
 
 #include <malloc.h>
+#include <stdio.h>
 
 #include "../src/freak.h"
 
@@ -25,6 +26,9 @@ static unsigned char c1;
 static unsigned char c2;
 static unsigned char c3;
 static unsigned char c4;
+static struct freak_font gallery_font = {
+    (const unsigned char *)0x000FFA6EL, 8, 8, 0, 128
+};
 
 static void set_palette_range(int first, int count, int red, int green,
                               int blue, int red_step, int green_step,
@@ -49,6 +53,7 @@ static void set_gallery_palette(void)
     set_palette_range(80, 16, 10, 2, 16, 3, 2, 3);
     set_palette_range(96, 16, 4, 50, 28, 3, -3, 2);
     freak_palette_fire(112, 16);
+    freak_set_palette(15, 63, 63, 63);
 }
 
 static void draw_tile(const struct freak_texture *texture, int left, int top)
@@ -83,9 +88,12 @@ static void draw_gallery(void)
     }
 }
 
-static int create_gallery(void)
+static int create_gallery(uint32_t master_seed)
 {
     int index;
+    struct freak_rng_streams random;
+
+    freak_rng_streams_seed(&random, master_seed);
 
     for (index = 0; index < GALLERY_PAGES; ++index) {
         if (!freak_texture_create(&pages[index])) {
@@ -96,18 +104,24 @@ static int create_gallery(void)
         return 0;
     }
 
-    freak_texture_noise(&pages[0], 1U, 2, 16, 16);
-    freak_texture_fractal_noise(&pages[1], 2U, 32, 1, 128U, 16, 16);
-    freak_texture_fractal_noise(&pages[2], 3U, 64, 5, 150U, 16, 16);
-    freak_texture_asphalt(&pages[3], 4U, 16, 16);
-    freak_texture_dirt(&pages[4], 5U, 32, 16);
-    freak_texture_grass(&pages[5], 6U, 48, 16);
-    freak_texture_clouds(&pages[6], 7U, 64, 16);
-    freak_texture_marble(&pages[7], 8U, 80, 16);
+    freak_texture_noise(&pages[0], freak_rng_next_u32(&random.visuals), 2, 16, 16);
+    freak_texture_fractal_noise(&pages[1], freak_rng_next_u32(&random.visuals),
+                                32, 1, 128U, 16, 16);
+    freak_texture_fractal_noise(&pages[2], freak_rng_next_u32(&random.visuals),
+                                64, 5, 150U, 16, 16);
+    freak_texture_asphalt(&pages[3], freak_rng_next_u32(&random.visuals), 16, 16);
+    freak_texture_dirt(&pages[4], freak_rng_next_u32(&random.visuals), 32, 16);
+    freak_texture_grass(&pages[5], freak_rng_next_u32(&random.visuals), 48, 16);
+    freak_texture_clouds(&pages[6], freak_rng_next_u32(&random.visuals), 64, 16);
+    freak_texture_marble(&pages[7], freak_rng_next_u32(&random.visuals), 80, 16);
     freak_texture_clear(&pages[9], 112);
     freak_texture_clear(&fire_page, 112);
     fire_current = &pages[9];
     fire_next = &fire_page;
+    c1 = (unsigned char)freak_rng_next_u16(&random.visuals);
+    c2 = (unsigned char)freak_rng_next_u16(&random.visuals);
+    c3 = (unsigned char)freak_rng_next_u16(&random.visuals);
+    c4 = (unsigned char)freak_rng_next_u16(&random.visuals);
     return 1;
 }
 
@@ -126,10 +140,15 @@ int freak_demo_texture_gallery(void)
     unsigned int tick;
     unsigned long last_tick;
     unsigned long now;
+    uint32_t master_seed;
+    struct freak_rng seed_rng;
+    char seed_text[48];
     struct freak_texture *swap;
 
     screen = (unsigned char *)malloc(64000U);
-    if (screen == 0 || !create_gallery()) {
+    master_seed = 0x00c0ffeeUL;
+    freak_rng_seed(&seed_rng, master_seed);
+    if (screen == 0 || !create_gallery(master_seed)) {
         destroy_gallery();
         free(screen);
         return 1;
@@ -137,10 +156,6 @@ int freak_demo_texture_gallery(void)
 
     set_gallery_palette();
     tick = 0;
-    c1 = 0;
-    c2 = 0;
-    c3 = 0;
-    c4 = 0;
     last_tick = freak_timer_ticks();
     freak_input_clear_events();
     while (1) {
@@ -148,6 +163,21 @@ int freak_demo_texture_gallery(void)
         if (freak_input_pressed(&freak_input_default_bindings,
                                 FREAK_ACTION_BACK))
             break;
+        if (freak_input_key_pressed(FREAK_KEY_R)) {
+            master_seed = freak_rng_next_u32(&seed_rng);
+            destroy_gallery();
+            if (!create_gallery(master_seed))
+                break;
+            tick = 0;
+        }
+        if (freak_input_key_pressed(FREAK_KEY_0)) {
+            master_seed = 0x00c0ffeeUL;
+            freak_rng_seed(&seed_rng, master_seed);
+            destroy_gallery();
+            if (!create_gallery(master_seed))
+                break;
+            tick = 0;
+        }
         now = freak_timer_ticks();
         tick += (unsigned int)(now - last_tick);
         last_tick = now;
@@ -162,6 +192,8 @@ int freak_demo_texture_gallery(void)
         fire_current = fire_next;
         fire_next = swap;
         draw_gallery();
+        sprintf(seed_text, "Seed: %lu  R: new  0: reset", master_seed);
+        freak_font_text(screen, 4, 4, &gallery_font, seed_text, 15);
         freak_wait_vsync();
         freak_copy_buffer(freak_vga, screen);
     }

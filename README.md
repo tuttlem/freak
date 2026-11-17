@@ -33,3 +33,11 @@ open it. Escape returns to the previous menu, or exits from the root menu.
 Plasma takes four mutable byte phase counters (`c1` through `c4`) and advances
 them at independent rates. `freak_texture_smudge_up` is the shared upward,
 cooling palette-ramp operation used for fire today and smoke tomorrow.
+
+## Deterministic randomness
+
+`freak_rng` is a small deterministic generator with explicit seeds. Use
+`freak_rng_seed_derived` to create an independent stream for a subsystem, or
+`freak_rng_streams_seed` for the standard gameplay, particles, and visuals
+streams. This keeps a particle effect from changing gameplay randomness and
+makes a reported seed reproducible.

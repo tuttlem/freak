@@ -14,6 +14,10 @@ void freak_timer_init(unsigned int hz);
 /* Returns the monotonically increasing number of timer ticks. */
 unsigned long freak_timer_ticks(void);
 
+/* Monotonic PIT cycles since initialisation. Suitable for short-duration
+   profiling; unsigned subtraction handles wraparound. */
+unsigned long freak_timer_cycles(void);
+
 /* Restores the BIOS PIT rate and interrupt handler. */
 void freak_timer_shutdown(void);
 

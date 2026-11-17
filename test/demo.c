@@ -1,5 +1,6 @@
 #include <malloc.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "../src/freak.h"
 
@@ -9,10 +10,11 @@
 #define DEMO_CUBE_FLAT         4
 #define DEMO_CUBE_GOURAUD      5
 #define DEMO_CUBE_TEXTURED     6
-#define DEMO_TEXTURE_GALLERY   7
-#define DEMO_UTILITIES         8
-#define DEMO_UI                9
-#define DEMO_QUIT             10
+#define DEMO_CUBE_PACING       7
+#define DEMO_TEXTURE_GALLERY   8
+#define DEMO_UTILITIES         9
+#define DEMO_UI               10
+#define DEMO_QUIT             11
 
 extern int freak_demo_texture_gallery(void);
 extern int freak_demo_utilities(void);
@@ -25,9 +27,10 @@ static const struct freak_menu_item rendering_items[] = {
     {"Spinning cube (flat)", DEMO_CUBE_FLAT, 0, 1},
     {"Spinning cube (Gouraud)", DEMO_CUBE_GOURAUD, 0, 1},
     {"Spinning cube (textured)", DEMO_CUBE_TEXTURED, 0, 1},
+    {"Cube frame pacing", DEMO_CUBE_PACING, 0, 1},
     {"Back", FREAK_MENU_BACK, 0, 1}
 };
-static const struct freak_menu rendering_menu = {"Rendering", rendering_items, 7};
+static const struct freak_menu rendering_menu = {"Rendering", rendering_items, 8};
 static const struct freak_menu_item texture_items[] = {
     {"Noise, plasma & fire", DEMO_TEXTURE_GALLERY, 0, 1},
     {"Back", FREAK_MENU_BACK, 0, 1}
@@ -48,6 +51,7 @@ static const struct freak_menu_item main_items[] = {
 static const struct freak_menu main_menu = {"Freak demo", main_items, 4};
 
 static unsigned char *screen;
+static struct freak_arena demo_arena;
 static struct freak_font font = {(const unsigned char *)0x000FFA6EL, 8, 8, 0, 128};
 static struct freak_menu_style menu_style = {1, 15, 15, 1, 12, 8, 6, 10};
 static struct freak_timing demo_timing;
@@ -180,9 +184,17 @@ static void run_cube(int mode)
     unsigned int tick;
     unsigned long elapsed;
     struct freak_fixed_step simulation;
+    struct freak_frame_pacer pacer;
+    struct freak_profiler profiler;
+    struct freak_profile_scope update_profile;
+    struct freak_profile_scope render_profile;
     int face_order[6];
     int index, face, sort, swap, a, b, c, d;
     int have_texture;
+    int paced;
+    int target_fps;
+    char pacing_text[80];
+    char profile_text[80];
 
     vec3_set(&base[0], -FIXED_ONE, -FIXED_ONE, -FIXED_ONE);
     vec3_set(&base[1],  FIXED_ONE, -FIXED_ONE, -FIXED_ONE);
@@ -193,6 +205,8 @@ static void run_cube(int mode)
     vec3_set(&base[6],  FIXED_ONE,  FIXED_ONE,  FIXED_ONE);
     vec3_set(&base[7], -FIXED_ONE,  FIXED_ONE,  FIXED_ONE);
     have_texture = 0;
+    paced = mode == DEMO_CUBE_PACING;
+    target_fps = 60;
     if (mode == DEMO_CUBE_TEXTURED) {
         have_texture = freak_texture_create(&texture);
         if (have_texture)
@@ -202,12 +216,29 @@ static void run_cube(int mode)
     set_demo_palette();
     tick = 0;
     freak_fixed_step_init(&simulation, 2, 8);
+    if (paced)
+        freak_frame_pacer_init(&pacer, 120, (unsigned int)target_fps);
+    freak_profiler_init(&profiler);
+    freak_profile_scope_reset(&update_profile);
+    freak_profile_scope_reset(&render_profile);
     freak_input_clear_events();
     while (1) {
+        if (paced) {
+            freak_profiler_begin_frame(&profiler);
+            freak_profile_scope_begin(&update_profile);
+        }
         freak_input_update();
         if (freak_input_pressed(&freak_input_default_bindings,
                                 FREAK_ACTION_BACK))
             break;
+        if (paced && freak_input_key_pressed(FREAK_KEY_LEFT)) {
+            target_fps = target_fps == 60 ? 30 : 15;
+            freak_frame_pacer_set_fps(&pacer, (unsigned int)target_fps);
+        }
+        if (paced && freak_input_key_pressed(FREAK_KEY_RIGHT)) {
+            target_fps = target_fps == 15 ? 30 : 60;
+            freak_frame_pacer_set_fps(&pacer, (unsigned int)target_fps);
+        }
         elapsed = freak_timing_update(&demo_timing);
         freak_fixed_step_add(&simulation, elapsed);
         while (freak_fixed_step_take(&simulation))
@@ -225,6 +256,10 @@ static void run_cube(int mode)
             rotated[index].y = y;
             px[index] = 160 + fixed_to_int(fixed_div(fixed_mul(x, int_to_fixed(100)), rotated[index].z));
             py[index] = 100 + fixed_to_int(fixed_div(fixed_mul(y, int_to_fixed(100)), rotated[index].z));
+        }
+        if (paced) {
+            freak_profile_scope_end(&update_profile);
+            freak_profile_scope_begin(&render_profile);
         }
         freak_clear_buffer(0, screen);
         for (face = 0; face < 6; ++face) {
@@ -248,7 +283,7 @@ static void run_cube(int mode)
             face = face_order[index];
             a = cube_faces[face][0]; b = cube_faces[face][1];
             c = cube_faces[face][2]; d = cube_faces[face][3];
-            if (mode == DEMO_CUBE_FLAT) {
+            if (mode == DEMO_CUBE_FLAT || paced) {
                 freak_quad_c(px[a], py[a], px[b], py[b], px[c], py[c], px[d], py[d],
                              64 + face * 5, screen);
             } else if (mode == DEMO_CUBE_GOURAUD) {
@@ -266,8 +301,24 @@ static void run_cube(int mode)
                              &texture, screen);
             }
         }
+        if (paced) {
+            freak_profile_scope_end(&render_profile);
+            sprintf(pacing_text, "Frame pacing: %d FPS  measured: %d", target_fps,
+                    freak_frame_pacer_fps(&pacer));
+            sprintf(profile_text, "Update: %lu us  Render: %lu us  Frame: %lu us",
+                    freak_profile_microseconds(update_profile.last_cycles),
+                    freak_profile_microseconds(render_profile.last_cycles),
+                    freak_profile_microseconds(profiler.last_frame_cycles));
+            freak_font_text(screen, 8, 8, &font, pacing_text, 15);
+            freak_font_text(screen, 8, 18, &font, "Left/right: change rate  Esc: back", 15);
+            freak_font_text(screen, 8, 28, &font, profile_text, 15);
+        }
         freak_wait_vsync();
         freak_copy_buffer(freak_vga, screen);
+        if (paced)
+            freak_frame_pacer_wait(&pacer);
+        if (paced)
+            freak_profiler_end_frame(&profiler);
     }
     if (have_texture)
         freak_texture_destroy(&texture);
@@ -282,7 +333,7 @@ static void launch_demo(int action, int *running)
         freak_mouse_show();
         freak_input_clear_events();
     } else if (action == DEMO_CUBE_FLAT || action == DEMO_CUBE_GOURAUD ||
-               action == DEMO_CUBE_TEXTURED) {
+               action == DEMO_CUBE_TEXTURED || action == DEMO_CUBE_PACING) {
         freak_mouse_hide();
         run_cube(action);
         freak_mouse_show();
@@ -315,13 +366,17 @@ int main(void)
     int hovered_item;
     int running;
 
-    screen = (unsigned char *)malloc(64000U);
-    if (!screen)
+    if (!freak_arena_init(&demo_arena, 64000U))
         return 1;
+    screen = (unsigned char *)freak_arena_alloc(&demo_arena, 64000U);
+    if (!screen) {
+        freak_arena_destroy(&demo_arena);
+        return 1;
+    }
     freak_set_mcga();
     if (!freak_timing_start(&demo_timing, 120)) {
         freak_set_text();
-        free(screen);
+        freak_arena_destroy(&demo_arena);
         return 1;
     }
     freak_input_init();
@@ -367,6 +422,6 @@ int main(void)
     freak_input_shutdown();
     freak_timing_stop();
     freak_set_text();
-    free(screen);
+    freak_arena_destroy(&demo_arena);
     return 0;
 }

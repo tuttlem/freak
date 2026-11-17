@@ -5,14 +5,22 @@ steps should favour small, visible demos that harden reusable library pieces.
 
 ## Foundations
 
-- [ ] **Input polish** — keyboard state, pressed/released edges, configurable
-  action bindings, and DOS mouse support are in; add joystick/gamepad support.
-- [ ] **Timing** — PIT-backed elapsed ticks, fixed-step accumulation, and
-  interpolation are in; add frame pacing and FPS/profiling counters.
-- [ ] **Memory helpers** — arenas/pools for transient game objects and a
-  debug allocator with leak reporting.
-- [ ] **Randomness** — seeded deterministic RNG streams for gameplay,
-  particles, and repeatable demos.
+- [x] **Input polish** — keyboard state, pressed/released edges, configurable
+  action bindings, DOS mouse support, and a unified event queue.
+- [ ] **Joystick input** — DOS gameport calibration, axes, buttons, and
+  configurable controller bindings.
+- [x] **Timing** — PIT-backed elapsed ticks, fixed-step accumulation, and
+  interpolation.
+- [x] **Frame pacing and FPS reporting** — configurable frame limits and
+  measured FPS.
+- [x] **Detailed profiling** — high-resolution frame, update, and render
+  timings.
+- [x] **Arena allocator** — aligned linear allocation, reset, and high-water
+  tracking for fixed-lifetime memory.
+- [ ] **Memory pools and debug allocation** — fixed object pools plus leak and
+  allocation reporting.
+- [x] **Randomness** — seeded deterministic RNG streams for gameplay,
+  particles, visuals, and repeatable demos.
 - [ ] **Debug tools** — on-screen console, assertions, logging levels,
   debug-draw primitives, and performance overlays.
 

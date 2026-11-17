@@ -5,9 +5,11 @@ file bin\utils
 file bin\menutest
 file bin\freak
 file bin\util
+file bin\arena
 file bin\vga
 file bin\timer
 file bin\timing
+file bin\profile
 file bin\keyboard
 file bin\input
 file bin\mouse

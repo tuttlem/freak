@@ -4,6 +4,9 @@
 call wcc386 /d2 /3s src\core\util.c -fo=bin\util.obj
 IF ERRORLEVEL 1 GOTO DONE
 
+call wcc386 /d2 /3s src\core\arena.c -fo=bin\arena.obj
+IF ERRORLEVEL 1 GOTO DONE
+
 call wcc386 /d2 /3s src\core\fixed.c -fo=bin\fixed.obj
 IF ERRORLEVEL 1 GOTO DONE
 
@@ -20,6 +23,9 @@ call wcc386 /d2 /3s src\dos\timer.c -fo=bin\timer.obj
 IF ERRORLEVEL 1 GOTO DONE
 
 call wcc386 /d2 /3s src\runtime\timing.c -fo=bin\timing.obj
+IF ERRORLEVEL 1 GOTO DONE
+
+call wcc386 /d2 /3s src\runtime\profile.c -fo=bin\profile.obj
 IF ERRORLEVEL 1 GOTO DONE
 
 call wcc386 /d2 /3s src\input\keyboard.c -fo=bin\keyboard.obj
