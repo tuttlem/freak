@@ -1,12 +1,9 @@
 #include "plat.h"
+#include "collide.h"
 
 static uint8_t collision_at(const struct freak_tilemap *map, int x, int y)
 {
-    if (x < 0 || y < 0 || x >= map->width * map->tile_width ||
-        y >= map->height * map->tile_height)
-        return FREAK_TILE_COLLISION_SOLID;
-    return freak_tilemap_collision(map, (uint16_t)(x / map->tile_width),
-                                   (uint16_t)(y / map->tile_height));
+    return freak_collision_tile_flags(map, x, y);
 }
 
 static void step_once(struct freak_platformer_body *body,

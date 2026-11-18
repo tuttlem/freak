@@ -76,6 +76,12 @@ IF ERRORLEVEL 1 GOTO DONE
 call wcc386 /d2 /3s src\2d\tilemap.c -fo=bin\tilemap2d.obj
 IF ERRORLEVEL 1 GOTO DONE
 
+call wcc386 /d2 /3s src\2d\collide.c -fo=bin\collide2d.obj
+IF ERRORLEVEL 1 GOTO DONE
+
+call wcc386 /d2 /3s src\2d\topdown.c -fo=bin\topdown2d.obj
+IF ERRORLEVEL 1 GOTO DONE
+
 call wcc386 /d2 /3s src\2d\plat.c -fo=bin\plat2d.obj
 IF ERRORLEVEL 1 GOTO DONE
 

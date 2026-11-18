@@ -27,6 +27,8 @@ file bin\camera2d
 file bin\sprite2d
 file bin\batch2d
 file bin\tilemap2d
+file bin\collide2d
+file bin\topdown2d
 file bin\plat2d
 file bin\physics
 file bin\camera

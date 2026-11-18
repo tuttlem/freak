@@ -36,9 +36,9 @@ steps should favour small, visible demos that harden reusable library pieces.
   and collision data.
 - [x] **Platformer toolkit** — slopes, one-way platforms, moving platforms,
   ladders, and responsive character movement.
-- [ ] **Top-down toolkit** — grid movement, pathfinding, field-of-view/fog of
+- [x] **Top-down toolkit** — grid movement, pathfinding, field-of-view/fog of
   war, triggers, doors, and pushable objects.
-- [ ] **Collision helpers** — AABB, circle, segment, swept collision,
+- [x] **Collision helpers** — AABB, circle, segment, swept collision,
   broad-phase spatial grid, and debug collision bounds.
 - [ ] **Particles** — pooled emitters, gravity, trails, sparks, smoke, fire,
   palette ramps, and additive/translucent modes.
