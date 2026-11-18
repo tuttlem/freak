@@ -8,6 +8,11 @@
 
 #define FREAK_TILEMAP_MAX_LAYERS 4
 #define FREAK_TILE_EMPTY 0xffffU
+#define FREAK_TILE_COLLISION_SOLID   0x01
+#define FREAK_TILE_COLLISION_ONE_WAY 0x02
+#define FREAK_TILE_COLLISION_SLOPE_UP_RIGHT 0x04
+#define FREAK_TILE_COLLISION_SLOPE_UP_LEFT  0x08
+#define FREAK_TILE_COLLISION_LADDER         0x10
 
 struct freak_tile_atlas {
     const struct freak_sprite *tiles;

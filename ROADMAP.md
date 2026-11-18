@@ -34,7 +34,7 @@ steps should favour small, visible demos that harden reusable library pieces.
 - [x] **Tile maps** — scrolling layered tile maps with collision attributes.
 - [x] **Map formats** — compact native FMP1 save/load format for tile layers
   and collision data.
-- [ ] **Platformer toolkit** — slopes, one-way platforms, moving platforms,
+- [x] **Platformer toolkit** — slopes, one-way platforms, moving platforms,
   ladders, and responsive character movement.
 - [ ] **Top-down toolkit** — grid movement, pathfinding, field-of-view/fog of
   war, triggers, doors, and pushable objects.
