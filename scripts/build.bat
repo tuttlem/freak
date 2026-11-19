@@ -82,6 +82,12 @@ IF ERRORLEVEL 1 GOTO DONE
 call wcc386 /d2 /3s src\2d\topdown.c -fo=bin\topdown2d.obj
 IF ERRORLEVEL 1 GOTO DONE
 
+call wcc386 /d2 /3s src\2d\particle.c -fo=bin\particle2d.obj
+IF ERRORLEVEL 1 GOTO DONE
+
+call wcc386 /d2 /3s src\2d\light2d.c -fo=bin\light2d.obj
+IF ERRORLEVEL 1 GOTO DONE
+
 call wcc386 /d2 /3s src\2d\plat.c -fo=bin\plat2d.obj
 IF ERRORLEVEL 1 GOTO DONE
 

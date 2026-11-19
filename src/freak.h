@@ -27,6 +27,8 @@
 #include "2d/tilemap.h"
 #include "2d/collide.h"
 #include "2d/topdown.h"
+#include "2d/particle.h"
+#include "2d/light2d.h"
 #include "2d/plat.h"
 #include "dos/timer.h"
 #include "dos/vga.h"

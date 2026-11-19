@@ -18,7 +18,9 @@
 #define DEMO_2D_TILEMAP       12
 #define DEMO_2D_PLATFORMER    13
 #define DEMO_2D_COLLISION     14
-#define DEMO_QUIT             15
+#define DEMO_2D_PARTICLES     15
+#define DEMO_2D_LIGHTING      16
+#define DEMO_QUIT             17
 
 extern int freak_demo_texture_gallery(void);
 extern int freak_demo_utilities(void);
@@ -51,9 +53,11 @@ static const struct freak_menu_item two_d_items[] = {
     {"Scrolling tile map", DEMO_2D_TILEMAP, 0, 1},
     {"Platformer movement", DEMO_2D_PLATFORMER, 0, 1},
     {"Top-down collision", DEMO_2D_COLLISION, 0, 1},
+    {"Particles", DEMO_2D_PARTICLES, 0, 1},
+    {"2D lighting", DEMO_2D_LIGHTING, 0, 1},
     {"Back", FREAK_MENU_BACK, 0, 1}
 };
-static const struct freak_menu two_d_menu = {"2D", two_d_items, 5};
+static const struct freak_menu two_d_menu = {"2D", two_d_items, 7};
 static const struct freak_menu_item main_items[] = {
     {"2D", 0, &two_d_menu, 1},
     {"Rendering", 0, &rendering_menu, 1},
@@ -648,6 +652,169 @@ static void run_topdown_collision(void)
     freak_tilemap_destroy(&map);
 }
 
+static void run_particles(void)
+{
+    struct freak_particles particles;
+    struct freak_particle_emitter fire;
+    struct freak_particle_emitter smoke;
+    struct freak_particle_emitter spark;
+    unsigned long last_tick;
+    unsigned long now;
+    unsigned long elapsed;
+    int source_x;
+    int source_y;
+
+    source_x = 160;
+    source_y = 164;
+    fire.velocity_x_min = -75; fire.velocity_x_max = 75;
+    fire.velocity_y_min = -290; fire.velocity_y_max = -100;
+    fire.gravity = 12; fire.life_min = 14; fire.life_max = 32;
+    fire.first_colour = 95; fire.last_colour = 64;
+    fire.size_min = 1; fire.size_max = 3;
+    fire.flags = FREAK_PARTICLE_ADDITIVE;
+    smoke.velocity_x_min = -35; smoke.velocity_x_max = 35;
+    smoke.velocity_y_min = -130; smoke.velocity_y_max = -45;
+    smoke.gravity = -2; smoke.life_min = 30; smoke.life_max = 58;
+    smoke.first_colour = 48; smoke.last_colour = 16;
+    smoke.size_min = 1; smoke.size_max = 2;
+    smoke.flags = FREAK_PARTICLE_TRANSLUCENT;
+    spark.velocity_x_min = -270; spark.velocity_x_max = 270;
+    spark.velocity_y_min = -340; spark.velocity_y_max = -80;
+    spark.gravity = 20; spark.life_min = 18; spark.life_max = 42;
+    spark.first_colour = 15; spark.last_colour = 64;
+    spark.size_min = 1; spark.size_max = 1;
+    spark.flags = FREAK_PARTICLE_TRAIL | FREAK_PARTICLE_ADDITIVE;
+    freak_particles_init(&particles, 0x50415254UL);
+    last_tick = freak_timer_ticks();
+    freak_input_clear_events();
+    while (1) {
+        freak_input_update();
+        if (freak_input_pressed(&freak_input_default_bindings,
+                                FREAK_ACTION_BACK))
+            break;
+        now = freak_timer_ticks();
+        elapsed = now - last_tick;
+        last_tick = now;
+        if (elapsed > 4) elapsed = 4;
+        if (freak_input_down(&freak_input_default_bindings, FREAK_ACTION_LEFT))
+            source_x -= (int)elapsed * 3;
+        if (freak_input_down(&freak_input_default_bindings, FREAK_ACTION_RIGHT))
+            source_x += (int)elapsed * 3;
+        if (freak_input_down(&freak_input_default_bindings, FREAK_ACTION_UP))
+            source_y -= (int)elapsed * 3;
+        if (freak_input_down(&freak_input_default_bindings, FREAK_ACTION_DOWN))
+            source_y += (int)elapsed * 3;
+        if (source_x < 8) source_x = 8;
+        if (source_x > 311) source_x = 311;
+        if (source_y < 24) source_y = 24;
+        if (source_y > 191) source_y = 191;
+        fire.x = source_x; fire.y = source_y;
+        smoke.x = source_x; smoke.y = source_y + 2;
+        spark.x = source_x; spark.y = source_y;
+        freak_particles_emit(&particles, &fire, (unsigned int)(elapsed * 3));
+        freak_particles_emit(&particles, &smoke, (unsigned int)elapsed);
+        if (freak_input_pressed(&freak_input_default_bindings, FREAK_ACTION_ACCEPT))
+            freak_particles_emit(&particles, &spark, 48);
+        freak_particles_update(&particles, elapsed);
+        set_demo_palette();
+        freak_clear_buffer(0, screen);
+        freak_particles_draw(&particles, screen);
+        freak_fill_rect(screen, source_x - 3, source_y + 3,
+                        source_x + 3, source_y + 5, 48);
+        freak_font_text(screen, 8, 8, &font,
+                        "Particles: fire + smoke  Enter: sparks  Esc: back", 15);
+        freak_font_text(screen, 8, 18, &font,
+                        "Arrows move the emitter", 15);
+        freak_wait_vsync();
+        freak_copy_buffer(freak_vga, screen);
+    }
+}
+
+static void run_lighting(void)
+{
+    struct freak_lighting2d lighting;
+    struct freak_light2d light;
+    struct freak_tilemap occlusion;
+    unsigned char *lightmap;
+    unsigned long last_tick;
+    unsigned long now;
+    unsigned long elapsed;
+    int player_x;
+    int player_y;
+    int x;
+    int y;
+
+    lightmap = (unsigned char *)malloc(FREAK_SCREEN_WIDTH * FREAK_SCREEN_HEIGHT);
+    if (!lightmap) return;
+    if (!freak_tilemap_init(&occlusion, 40, 25, 8, 8, 1, 1)) {
+        free(lightmap);
+        return;
+    }
+    for (y = 0; y < 25; ++y)
+        for (x = 0; x < 40; ++x)
+            if ((y == 4 && x >= 2 && x <= 37) ||
+                (y == 20 && x >= 2 && x <= 37) ||
+                (x == 14 && y >= 7 && y <= 18) ||
+                (x == 26 && y >= 7 && y <= 18) ||
+                (y == 12 && x >= 15 && x <= 25))
+                freak_tilemap_set_collision(&occlusion, (uint16_t)x, (uint16_t)y,
+                                            FREAK_TILE_COLLISION_SOLID);
+    player_x = 160;
+    player_y = 104;
+    freak_lighting2d_init(&lighting, 38);
+    light.x = player_x; light.y = player_y; light.radius = 52;
+    light.intensity = 230; light.colour = 15; light.flicker = 0; light.enabled = 1;
+    freak_lighting2d_add(&lighting, &light);
+    light.x = 64; light.y = 60; light.radius = 42;
+    light.intensity = 200; light.colour = 92; light.flicker = 17; light.enabled = 1;
+    freak_lighting2d_add(&lighting, &light);
+    light.x = 260; light.y = 146; light.radius = 48;
+    light.intensity = 205; light.colour = 88; light.flicker = 23; light.enabled = 1;
+    freak_lighting2d_add(&lighting, &light);
+    last_tick = freak_timer_ticks();
+    freak_input_clear_events();
+    while (1) {
+        freak_input_update();
+        if (freak_input_pressed(&freak_input_default_bindings, FREAK_ACTION_BACK))
+            break;
+        now = freak_timer_ticks(); elapsed = now - last_tick; last_tick = now;
+        if (elapsed > 4) elapsed = 4;
+        if (freak_input_down(&freak_input_default_bindings, FREAK_ACTION_LEFT)) player_x -= (int)elapsed * 3;
+        if (freak_input_down(&freak_input_default_bindings, FREAK_ACTION_RIGHT)) player_x += (int)elapsed * 3;
+        if (freak_input_down(&freak_input_default_bindings, FREAK_ACTION_UP)) player_y -= (int)elapsed * 3;
+        if (freak_input_down(&freak_input_default_bindings, FREAK_ACTION_DOWN)) player_y += (int)elapsed * 3;
+        if (freak_input_pressed(&freak_input_default_bindings, FREAK_ACTION_ACCEPT))
+            lighting.ambient = lighting.ambient < 100 ? 150 : 38;
+        lighting.lights[0].x = player_x;
+        lighting.lights[0].y = player_y;
+        freak_lighting2d_update(&lighting, elapsed);
+        set_demo_palette();
+        freak_clear_buffer(48, screen);
+        freak_fill_rect(screen, 16, 32, 303, 39, 32);
+        freak_fill_rect(screen, 16, 160, 303, 167, 32);
+        freak_fill_rect(screen, 112, 56, 119, 151, 32);
+        freak_fill_rect(screen, 208, 56, 215, 151, 32);
+        freak_fill_rect(screen, 120, 96, 207, 103, 32);
+        freak_lighting2d_render_occluded(&lighting, &occlusion,
+                                         FREAK_TILE_COLLISION_SOLID, lightmap,
+                                         FREAK_SCREEN_WIDTH, FREAK_SCREEN_HEIGHT);
+        freak_lighting2d_shade(screen, lightmap, FREAK_SCREEN_WIDTH,
+                               FREAK_SCREEN_HEIGHT);
+        freak_lighting2d_colour_glow(&lighting, screen, FREAK_SCREEN_WIDTH,
+                                     FREAK_SCREEN_HEIGHT);
+        freak_fill_rect(screen, player_x - 3, player_y - 3,
+                        player_x + 3, player_y + 3, 15);
+        freak_font_text(screen, 8, 8, &font,
+                        "2D lights: radial, flicker & palette glow", 15);
+        freak_font_text(screen, 8, 18, &font,
+                        "Arrows: move light  Enter: day/night  Esc: back", 15);
+        freak_wait_vsync();
+        freak_copy_buffer(freak_vga, screen);
+    }
+    freak_tilemap_destroy(&occlusion);
+    free(lightmap);
+}
+
 static void run_platformer(void)
 {
     struct freak_tilemap map;
@@ -843,6 +1010,16 @@ static void launch_demo(int action, int *running)
     } else if (action == DEMO_2D_COLLISION) {
         freak_mouse_hide();
         run_topdown_collision();
+        freak_mouse_show();
+        freak_input_clear_events();
+    } else if (action == DEMO_2D_PARTICLES) {
+        freak_mouse_hide();
+        run_particles();
+        freak_mouse_show();
+        freak_input_clear_events();
+    } else if (action == DEMO_2D_LIGHTING) {
+        freak_mouse_hide();
+        run_lighting();
         freak_mouse_show();
         freak_input_clear_events();
     } else if (action == DEMO_QUIT) {

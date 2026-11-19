@@ -40,9 +40,9 @@ steps should favour small, visible demos that harden reusable library pieces.
   war, triggers, doors, and pushable objects.
 - [x] **Collision helpers** — AABB, circle, segment, swept collision,
   broad-phase spatial grid, and debug collision bounds.
-- [ ] **Particles** — pooled emitters, gravity, trails, sparks, smoke, fire,
+- [x] **Particles** — pooled emitters, gravity, trails, sparks, smoke, fire,
   palette ramps, and additive/translucent modes.
-- [ ] **2D lighting** — radial light masks, flicker, coloured-light palette
+- [x] **2D lighting** — radial light masks, flicker, coloured-light palette
   approximations, shadows, and day/night palette transitions.
 - [ ] **UI/HUD** — bitmap font layout, panels, buttons, lists, dialogue boxes,
   inventory grids, cursors, and save/load menus.
