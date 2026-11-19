@@ -138,7 +138,7 @@ void freak_lighting2d_render_occluded(const struct freak_lighting2d *lighting,
                 tile_y = y / map->tile_height;
                 tile_index = (unsigned int)tile_y * map->width + tile_x;
                 if (distance > light->radius ||
-                    (tile_count <= FREAK_LIGHT2D_MAX_OCCLUS_TILES &&
+                    (tile_count <= FREAK_LIGHT2D_MAX_OCCLUSION_TILES &&
                      !light_visibility[tile_index]))
                     continue;
                 strength = (light->intensity * (light->radius - distance)) /

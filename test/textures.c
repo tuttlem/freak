@@ -26,6 +26,7 @@ static unsigned char c1;
 static unsigned char c2;
 static unsigned char c3;
 static unsigned char c4;
+static struct freak_metaball metaballs[3];
 static struct freak_font gallery_font = {
     (const unsigned char *)0x000FFA6EL, 8, 8, 0, 128
 };
@@ -122,6 +123,9 @@ static int create_gallery(uint32_t master_seed)
     c2 = (unsigned char)freak_rng_next_u16(&random.visuals);
     c3 = (unsigned char)freak_rng_next_u16(&random.visuals);
     c4 = (unsigned char)freak_rng_next_u16(&random.visuals);
+    metaballs[0].radius = 54;
+    metaballs[1].radius = 46;
+    metaballs[2].radius = 38;
     return 1;
 }
 
@@ -181,6 +185,14 @@ int freak_demo_texture_gallery(void)
         now = freak_timer_ticks();
         tick += (unsigned int)(now - last_tick);
         last_tick = now;
+        metaballs[0].x = 80 + fixed_to_int(fixed_sin((tick * 9) & 1023) * 42);
+        metaballs[0].y = 112 + fixed_to_int(fixed_cos((tick * 7) & 1023) * 36);
+        metaballs[1].x = 150 + fixed_to_int(fixed_sin((tick * 5 + 250) & 1023) * 58);
+        metaballs[1].y = 130 + fixed_to_int(fixed_cos((tick * 11 + 250) & 1023) * 40);
+        metaballs[2].x = 130 + fixed_to_int(fixed_sin((tick * 13 + 620) & 1023) * 50);
+        metaballs[2].y = 70 + fixed_to_int(fixed_cos((tick * 6 + 620) & 1023) * 38);
+        freak_texture_metaballs(&pages[0], metaballs, 3, 16, 16);
+        freak_texture_water_ripple(&pages[1], &pages[2], tick, 3);
         freak_texture_plasma(&pages[8], &c1, &c2, &c3, &c4, 96, 16);
         freak_texture_smudge_up(fire_next, fire_current, tick, 112, 16);
         /* Palette cycling animates existing pixels without touching the page. */

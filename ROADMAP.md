@@ -44,7 +44,7 @@ steps should favour small, visible demos that harden reusable library pieces.
   palette ramps, and additive/translucent modes.
 - [x] **2D lighting** — radial light masks, flicker, coloured-light palette
   approximations, shadows, and day/night palette transitions.
-- [ ] **UI/HUD** — bitmap font layout, panels, buttons, lists, dialogue boxes,
+- [x] **UI/HUD** — bitmap font layout, panels, buttons, lists, dialogue boxes,
   inventory grids, cursors, and save/load menus.
 
 ## 3D and software rendering
@@ -72,21 +72,21 @@ steps should favour small, visible demos that harden reusable library pieces.
 
 ## Demo-scene and visual effects
 
-- [ ] **Palette effects** — fades, cycling, gradients, colour cycling, and
+- [x] **Palette effects** — fades, cycling, gradients, colour cycling, and
   palette-range animation.
-- [ ] **Blending effects** — additive, subtractive, multiplicative, and
+- [x] **Blending effects** — additive, subtractive, multiplicative, and
   translucent lookup-table blending.
-- [ ] **Plasma and fire** — expand the existing texture work with metaballs,
+- [x] **Plasma and fire** — expand the existing texture work with metaballs,
   interference patterns, heat haze, smoke, and water ripples.
-- [ ] **Lens flare** — configurable flare elements, screen-space occlusion,
+- [x] **Lens flare** — configurable flare elements, screen-space occlusion,
   streaks, halos, and animated light sources.
-- [ ] **Glass lens/distortion** — magnifying glass, fisheye, wobbly water,
+- [x] **Glass lens/distortion** — magnifying glass, fisheye, wobbly water,
   shockwaves, refraction, and page-warp effects.
-- [ ] **Scalers and rotozoom** — stretch, rotate, zoom, tunnel, and floor
+- [x] **Scalers and rotozoom** — stretch, rotate, zoom, tunnel, and floor
   effects using texture lookup tables.
-- [ ] **Voxel and height-field experiments** — voxel landscape, terrain
+- [x] **Voxel and height-field experiments** — voxel landscape, terrain
   renderer, marching cubes, or a small signed-distance-field demo.
-- [ ] **Text effects** — sine scrollers, vector/logo reveals, starfields,
+- [x] **Text effects** — sine scrollers, vector/logo reveals, starfields,
   credits, and beat-synchronised transitions.
 
 ## Sound and music

@@ -20,9 +20,15 @@ file bin\image
 file bin\font
 file bin\debug
 file bin\transit
+file bin\blend
+file bin\flare
+file bin\distort
+file bin\xform
+file bin\voxel
 file bin\texture
 file bin\menu
 file bin\dialog
+file bin\widgets
 file bin\camera2d
 file bin\sprite2d
 file bin\batch2d

@@ -21,6 +21,13 @@
 #define DEMO_2D_PARTICLES     15
 #define DEMO_2D_LIGHTING      16
 #define DEMO_QUIT             17
+#define DEMO_PALETTE_EFFECTS  18
+#define DEMO_BLEND_EFFECTS    19
+#define DEMO_LENS_FLARE       20
+#define DEMO_DISTORTION       21
+#define DEMO_XFORM            22
+#define DEMO_TEXT_EFFECTS     23
+#define DEMO_VOXEL             24
 
 extern int freak_demo_texture_gallery(void);
 extern int freak_demo_utilities(void);
@@ -48,6 +55,17 @@ static const struct freak_menu_item utility_items[] = {
     {"Back", FREAK_MENU_BACK, 0, 1}
 };
 static const struct freak_menu utility_menu = {"Utilities", utility_items, 3};
+static const struct freak_menu_item effects_items[] = {
+    {"Palette fades & cycling", DEMO_PALETTE_EFFECTS, 0, 1},
+    {"Blend modes", DEMO_BLEND_EFFECTS, 0, 1},
+    {"Lens flare", DEMO_LENS_FLARE, 0, 1},
+    {"Glass lens & distortion", DEMO_DISTORTION, 0, 1},
+    {"Scalers, rotozoom & tunnel", DEMO_XFORM, 0, 1},
+    {"Text effects & starfield", DEMO_TEXT_EFFECTS, 0, 1},
+    {"Voxel height field", DEMO_VOXEL, 0, 1},
+    {"Back", FREAK_MENU_BACK, 0, 1}
+};
+static const struct freak_menu effects_menu = {"Effects", effects_items, 8};
 static const struct freak_menu_item two_d_items[] = {
     {"Camera & animated sprites", DEMO_2D_SPRITES, 0, 1},
     {"Scrolling tile map", DEMO_2D_TILEMAP, 0, 1},
@@ -62,10 +80,11 @@ static const struct freak_menu_item main_items[] = {
     {"2D", 0, &two_d_menu, 1},
     {"Rendering", 0, &rendering_menu, 1},
     {"Textures", 0, &texture_menu, 1},
+    {"Effects", 0, &effects_menu, 1},
     {"Utilities", 0, &utility_menu, 1},
     {"Quit", DEMO_QUIT, 0, 1}
 };
-static const struct freak_menu main_menu = {"Freak demo", main_items, 5};
+static const struct freak_menu main_menu = {"Freak demo", main_items, 6};
 
 static unsigned char *screen;
 static struct freak_arena demo_arena;
@@ -730,6 +749,305 @@ static void run_particles(void)
     }
 }
 
+static void run_palette_effects(void)
+{
+    struct freak_palette_snapshot snapshot;
+    unsigned long last_tick;
+    unsigned long now;
+    unsigned long tick;
+    unsigned int phase;
+    int band;
+
+    freak_palette_greyscale(0, 32, 0, 24);
+    freak_palette_sky(32, 16);
+    freak_palette_fire(48, 16);
+    freak_palette_preset(64, 16, FREAK_PALETTE_WATER,
+                         FREAK_PALETTE_WATER_COUNT);
+    freak_palette_preset(80, 16, FREAK_PALETTE_FOREST,
+                         FREAK_PALETTE_FOREST_COUNT);
+    freak_palette_fire(96, 32);
+    freak_transition_palette_capture(&snapshot, 0, 96);
+    tick = 0;
+    last_tick = freak_timer_ticks();
+    freak_input_clear_events();
+    while (1) {
+        freak_input_update();
+        if (freak_input_pressed(&freak_input_default_bindings,
+                                FREAK_ACTION_BACK))
+            break;
+        now = freak_timer_ticks();
+        tick += now - last_tick;
+        last_tick = now;
+        phase = (unsigned int)(tick % 144U);
+        if (phase < 72)
+            freak_transition_fade_down(&snapshot, 0, 96, phase, 72);
+        else
+            freak_transition_fade_up(&snapshot, 0, 96, phase - 72, 72);
+        if ((tick & 1U) == 0)
+            freak_palette_rotate(96, 32, 1);
+        for (band = 0; band < 6; ++band)
+            freak_fill_rect(screen, 20, 42 + band * 22, 299,
+                            60 + band * 22, (uint8_t)(band * 16 + 8));
+        freak_fill_rect(screen, 20, 176, 299, 190,
+                        (uint8_t)(96 + (tick & 31U)));
+        freak_font_text(screen, 8, 8, &font,
+                        "Palette effects: gradients, fades & cycling", 15);
+        freak_font_text(screen, 8, 18, &font,
+                        "Pixels stay put; only the DAC palette changes", 15);
+        freak_wait_vsync();
+        freak_copy_buffer(freak_vga, screen);
+    }
+}
+
+static void run_blend_effects(void)
+{
+    unsigned char *table;
+    enum freak_blend_mode mode;
+    static const char *labels[] = {"Additive", "Subtractive", "Multiply", "Translucent"};
+
+    table = (unsigned char *)malloc(FREAK_BLEND_TABLE_SIZE);
+    if (!table) return;
+    freak_palette_greyscale(0, 64, 0, 63);
+    freak_palette_fire(64, 64);
+    freak_palette_sky(128, 64);
+    freak_palette_preset(192, 63, FREAK_PALETTE_FOREST,
+                         FREAK_PALETTE_FOREST_COUNT);
+    freak_set_palette(15, 63, 63, 63);
+    mode = FREAK_BLEND_ADDITIVE;
+    freak_blend_table_build(table, mode);
+    freak_input_clear_events();
+    while (1) {
+        freak_input_update();
+        if (freak_input_pressed(&freak_input_default_bindings, FREAK_ACTION_BACK))
+            break;
+        if (freak_input_pressed(&freak_input_default_bindings, FREAK_ACTION_LEFT)) {
+            mode = mode == FREAK_BLEND_ADDITIVE ? FREAK_BLEND_TRANSLUCENT : mode - 1;
+            freak_blend_table_build(table, mode);
+        }
+        if (freak_input_pressed(&freak_input_default_bindings, FREAK_ACTION_RIGHT)) {
+            mode = mode == FREAK_BLEND_TRANSLUCENT ? FREAK_BLEND_ADDITIVE : mode + 1;
+            freak_blend_table_build(table, mode);
+        }
+        freak_clear_buffer(0, screen);
+        freak_fill_rect(screen, 24, 46, 295, 150, 100);
+        freak_fill_rect(screen, 50, 66, 185, 132, 160);
+        freak_blend_rect(screen, 115, 55, 245, 142, 80, table);
+        freak_blend_rect(screen, 82, 82, 218, 158, 220, table);
+        freak_font_text(screen, 8, 8, &font, "Blend lookup tables", 15);
+        freak_font_text(screen, 8, 18, &font, labels[mode], 15);
+        freak_font_text(screen, 8, 180, &font,
+                        "Left/Right: mode  Esc: back", 15);
+        freak_wait_vsync();
+        freak_copy_buffer(freak_vga, screen);
+    }
+    free(table);
+}
+
+static void run_lens_flare(void)
+{
+    struct freak_lens_flare flare;
+    unsigned long last_tick;
+    unsigned long now;
+    unsigned long elapsed;
+
+    flare.source_x = 255;
+    flare.source_y = 55;
+    flare.radius = 18;
+    flare.colour = 92;
+    flare.intensity = 220;
+    flare.occluded = 0;
+    freak_palette_sky(0, 64);
+    freak_palette_fire(64, 32);
+    freak_set_palette(15, 63, 63, 63);
+    last_tick = freak_timer_ticks();
+    freak_input_clear_events();
+    while (1) {
+        freak_input_update();
+        if (freak_input_pressed(&freak_input_default_bindings, FREAK_ACTION_BACK))
+            break;
+        now = freak_timer_ticks(); elapsed = now - last_tick; last_tick = now;
+        if (elapsed > 4) elapsed = 4;
+        if (freak_input_down(&freak_input_default_bindings, FREAK_ACTION_LEFT)) flare.source_x -= (int)elapsed * 3;
+        if (freak_input_down(&freak_input_default_bindings, FREAK_ACTION_RIGHT)) flare.source_x += (int)elapsed * 3;
+        if (freak_input_down(&freak_input_default_bindings, FREAK_ACTION_UP)) flare.source_y -= (int)elapsed * 3;
+        if (freak_input_down(&freak_input_default_bindings, FREAK_ACTION_DOWN)) flare.source_y += (int)elapsed * 3;
+        if (freak_input_pressed(&freak_input_default_bindings, FREAK_ACTION_ACCEPT))
+            flare.occluded = !flare.occluded;
+        freak_clear_buffer(18, screen);
+        freak_fill_rect(screen, 0, 130, 319, 199, 8);
+        freak_fill_rect(screen, 60, 118, 260, 132, 12);
+        freak_lens_flare_draw(screen, &flare, 160, 100);
+        freak_font_text(screen, 8, 8, &font,
+                        "Lens flare: halo, streaks & ghosts", 15);
+        freak_font_text(screen, 8, 18, &font,
+                        "Arrows: light  Enter: occlusion  Esc: back", 15);
+        freak_wait_vsync();
+        freak_copy_buffer(freak_vga, screen);
+    }
+}
+
+static void run_distortion(void)
+{
+    unsigned char *source;
+    unsigned char *output;
+    unsigned long last_tick, now, tick;
+    int center_x, center_y, x, y, mode;
+    static const char *labels[] = {"Magnifying glass", "Water wobble", "Shockwave"};
+
+    source = (unsigned char *)malloc(64000U);
+    output = (unsigned char *)malloc(64000U);
+    if (!source || !output) { free(source); free(output); return; }
+    freak_palette_sky(0, 64);
+    freak_palette_fire(64, 32);
+    freak_palette_preset(96, 64, FREAK_PALETTE_ICE, FREAK_PALETTE_ICE_COUNT);
+    freak_set_palette(15, 63, 63, 63);
+    center_x = 160; center_y = 100; mode = 0; tick = 0;
+    last_tick = freak_timer_ticks();
+    freak_input_clear_events();
+    while (1) {
+        freak_input_update();
+        if (freak_input_pressed(&freak_input_default_bindings, FREAK_ACTION_BACK)) break;
+        now = freak_timer_ticks(); tick += now - last_tick; last_tick = now;
+        if (freak_input_pressed(&freak_input_default_bindings, FREAK_ACTION_ACCEPT)) mode = (mode + 1) % 3;
+        if (freak_input_down(&freak_input_default_bindings, FREAK_ACTION_LEFT)) center_x -= 2;
+        if (freak_input_down(&freak_input_default_bindings, FREAK_ACTION_RIGHT)) center_x += 2;
+        if (freak_input_down(&freak_input_default_bindings, FREAK_ACTION_UP)) center_y -= 2;
+        if (freak_input_down(&freak_input_default_bindings, FREAK_ACTION_DOWN)) center_y += 2;
+        for (y = 0; y < 200; ++y)
+            for (x = 0; x < 320; ++x)
+                source[y * 320 + x] = (uint8_t)(96 + ((x / 16 + y / 12) & 31));
+        freak_fill_rect(source, 80, 70, 240, 130, 72);
+        freak_fill_rect(source, 138, 40, 182, 160, 48);
+        if (mode == 0) freak_distort_lens(output, source, center_x, center_y, 54, 85);
+        else if (mode == 1) freak_distort_wave(output, source, (unsigned int)tick, 5);
+        else freak_distort_shockwave(output, source, center_x, center_y,
+                                     20 + (int)(tick % 70U), 12, 45);
+        freak_font_text(output, 8, 8, &font, "Glass lens & distortion", 15);
+        freak_font_text(output, 8, 18, &font, labels[mode], 15);
+        freak_font_text(output, 8, 180, &font,
+                        "Enter: mode  Arrows: centre  Esc: back", 15);
+        freak_wait_vsync();
+        freak_copy_buffer(freak_vga, output);
+    }
+    free(output);
+    free(source);
+}
+
+static void run_xform(void)
+{
+    struct freak_texture texture;
+    uint8_t a, b, c, d;
+    unsigned long last_tick, now, tick;
+    int mode;
+    static const char *labels[] = {"Scale", "Rotozoom", "Tunnel", "Floor"};
+
+    if (!freak_texture_create(&texture)) return;
+    a = 0; b = 64; c = 128; d = 192; mode = 0; tick = 0;
+    freak_palette_sky(0, 64); freak_palette_fire(64, 64);
+    freak_palette_preset(128, 64, FREAK_PALETTE_WATER, FREAK_PALETTE_WATER_COUNT);
+    last_tick = freak_timer_ticks(); freak_input_clear_events();
+    while (1) {
+        freak_input_update();
+        if (freak_input_pressed(&freak_input_default_bindings, FREAK_ACTION_BACK)) break;
+        now = freak_timer_ticks(); tick += now - last_tick; last_tick = now;
+        if (freak_input_pressed(&freak_input_default_bindings, FREAK_ACTION_ACCEPT)) mode = (mode + 1) & 3;
+        freak_texture_plasma(&texture, &a, &b, &c, &d, 64, 64);
+        freak_clear_buffer(12, screen);
+        if (mode == 0) freak_xform_scale(screen, &texture, 48, 35, 224, 150);
+        else if (mode == 1) freak_xform_rotozoom(screen, &texture, 160, 100,
+                                                  (int)(tick * 12), 100 + (int)(tick % 80U));
+        else if (mode == 2) freak_xform_tunnel(screen, &texture, 160, 100, (unsigned int)tick);
+        else { freak_fill_rect(screen, 0, 0, 319, 99, 20); freak_xform_floor(screen, &texture, 100, (unsigned int)tick); }
+        freak_font_text(screen, 8, 8, &font, "Scalers & mapping", 15);
+        freak_font_text(screen, 8, 18, &font, labels[mode], 15);
+        freak_font_text(screen, 8, 180, &font, "Enter: mode  Esc: back", 15);
+        freak_wait_vsync(); freak_copy_buffer(freak_vga, screen);
+    }
+    freak_texture_destroy(&texture);
+}
+
+static void run_text_effects(void)
+{
+    int stars_x[64];
+    int stars_y[64];
+    int stars_z[64];
+    unsigned long last_tick, now, tick;
+    int index, x, y, text_x;
+    const char *scroll = "  FREAK -- DOS GAME CODE, TINY DEMOS, BIG IDEAS -- ";
+    int length = 0;
+
+    while (scroll[length]) ++length;
+    for (index = 0; index < 64; ++index) {
+        stars_x[index] = ((index * 73) % 320) - 160;
+        stars_y[index] = ((index * 47) % 200) - 100;
+        stars_z[index] = 20 + (index * 31) % 180;
+    }
+    freak_palette_sky(0, 64); freak_palette_fire(64, 64);
+    freak_set_palette(15, 63, 63, 63);
+    tick = 0; last_tick = freak_timer_ticks(); freak_input_clear_events();
+    while (1) {
+        freak_input_update();
+        if (freak_input_pressed(&freak_input_default_bindings, FREAK_ACTION_BACK)) break;
+        now = freak_timer_ticks(); tick += now - last_tick; last_tick = now;
+        freak_clear_buffer(0, screen);
+        for (index = 0; index < 64; ++index) {
+            stars_z[index] -= 2;
+            if (stars_z[index] < 4) { stars_z[index] = 180; stars_x[index] = ((index * 97 + tick) % 320) - 160; stars_y[index] = ((index * 59 + tick) % 200) - 100; }
+            x = 160 + stars_x[index] * 80 / stars_z[index];
+            y = 100 + stars_y[index] * 80 / stars_z[index];
+            freak_draw_pixel(screen, x, y, (uint8_t)(8 + (180 - stars_z[index]) / 14));
+        }
+        text_x = 160 - freak_font_measure(&font, "F R E A K").width / 2;
+        for (index = 0; index < 9; ++index)
+            freak_font_char(screen, text_x + index * 8,
+                            44 + fixed_to_int(fixed_sin((index * 80 + tick * 12) & 1023) * 8),
+                            &font, "F R E A K"[index], (uint8_t)(64 + index * 3));
+        for (index = 0; index < length; ++index) {
+            x = 320 - (int)((tick * 3 + index * 8) % (length * 8 + 320));
+            y = 154 + fixed_to_int(fixed_sin((index * 48 + tick * 10) & 1023) * 7);
+            freak_font_char(screen, x, y, &font, scroll[index], 15);
+        }
+        freak_font_text(screen, 86, 90, &font, "CODE / ART / SOUND / PLAY", 15);
+        freak_font_text(screen, 8, 184, &font, "Esc: back", 15);
+        freak_wait_vsync(); freak_copy_buffer(freak_vga, screen);
+    }
+}
+
+static void run_voxel(void)
+{
+    struct freak_texture height;
+    struct freak_voxel_view view;
+    unsigned long last_tick, now, elapsed;
+
+    if (!freak_texture_create(&height)) return;
+    freak_texture_fractal_noise(&height, 0x564f5845UL, 32, 5, 150U, 0, 255);
+    freak_palette_sky(0, 64);
+    freak_palette_preset(64, 64, FREAK_PALETTE_FOREST, FREAK_PALETTE_FOREST_COUNT);
+    freak_palette_preset(128, 64, FREAK_PALETTE_SEPIA, FREAK_PALETTE_SEPIA_COUNT);
+    view.x = 128; view.y = 0; view.height = 180; view.horizon = 70; view.distance = 180;
+    last_tick = freak_timer_ticks(); freak_input_clear_events();
+    while (1) {
+        freak_input_update();
+        if (freak_input_pressed(&freak_input_default_bindings, FREAK_ACTION_BACK)) break;
+        now = freak_timer_ticks(); elapsed = now - last_tick; last_tick = now;
+        if (elapsed > 4) elapsed = 4;
+        if (freak_input_down(&freak_input_default_bindings, FREAK_ACTION_LEFT)) view.x -= (int)elapsed * 3;
+        if (freak_input_down(&freak_input_default_bindings, FREAK_ACTION_RIGHT)) view.x += (int)elapsed * 3;
+        if (freak_input_down(&freak_input_default_bindings, FREAK_ACTION_UP)) view.height += (int)elapsed * 4;
+        if (freak_input_down(&freak_input_default_bindings, FREAK_ACTION_DOWN)) view.height -= (int)elapsed * 4;
+        if (freak_input_key_down(FREAK_KEY_W)) view.y += (int)elapsed * 3;
+        if (freak_input_key_down(FREAK_KEY_S)) view.y -= (int)elapsed * 3;
+        if (view.height < 20) view.height = 20;
+        if (view.height > 250) view.height = 250;
+        freak_clear_buffer(26, screen);
+        freak_voxel_heightfield(screen, height.pixels, &view, 64, 64);
+        freak_font_text(screen, 8, 8, &font, "Voxel height field", 15);
+        freak_font_text(screen, 8, 18, &font, "Left/Right: strafe  Up/Down: altitude  W/S: forward", 15);
+        freak_wait_vsync(); freak_copy_buffer(freak_vga, screen);
+    }
+    freak_texture_destroy(&height);
+}
+
 static void run_lighting(void)
 {
     struct freak_lighting2d lighting;
@@ -1020,6 +1338,41 @@ static void launch_demo(int action, int *running)
     } else if (action == DEMO_2D_LIGHTING) {
         freak_mouse_hide();
         run_lighting();
+        freak_mouse_show();
+        freak_input_clear_events();
+    } else if (action == DEMO_PALETTE_EFFECTS) {
+        freak_mouse_hide();
+        run_palette_effects();
+        freak_mouse_show();
+        freak_input_clear_events();
+    } else if (action == DEMO_BLEND_EFFECTS) {
+        freak_mouse_hide();
+        run_blend_effects();
+        freak_mouse_show();
+        freak_input_clear_events();
+    } else if (action == DEMO_LENS_FLARE) {
+        freak_mouse_hide();
+        run_lens_flare();
+        freak_mouse_show();
+        freak_input_clear_events();
+    } else if (action == DEMO_DISTORTION) {
+        freak_mouse_hide();
+        run_distortion();
+        freak_mouse_show();
+        freak_input_clear_events();
+    } else if (action == DEMO_XFORM) {
+        freak_mouse_hide();
+        run_xform();
+        freak_mouse_show();
+        freak_input_clear_events();
+    } else if (action == DEMO_TEXT_EFFECTS) {
+        freak_mouse_hide();
+        run_text_effects();
+        freak_mouse_show();
+        freak_input_clear_events();
+    } else if (action == DEMO_VOXEL) {
+        freak_mouse_hide();
+        run_voxel();
         freak_mouse_show();
         freak_input_clear_events();
     } else if (action == DEMO_QUIT) {

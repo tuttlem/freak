@@ -58,10 +58,28 @@ IF ERRORLEVEL 1 GOTO DONE
 call wcc386 /d2 /3s src\render\transit.c -fo=bin\transit.obj
 IF ERRORLEVEL 1 GOTO DONE
 
+call wcc386 /d2 /3s src\render\blend.c -fo=bin\blend.obj
+IF ERRORLEVEL 1 GOTO DONE
+
+call wcc386 /d2 /3s src\render\flare.c -fo=bin\flare.obj
+IF ERRORLEVEL 1 GOTO DONE
+
+call wcc386 /d2 /3s src\render\distort.c -fo=bin\distort.obj
+IF ERRORLEVEL 1 GOTO DONE
+
+call wcc386 /d2 /3s src\render\xform.c -fo=bin\xform.obj
+IF ERRORLEVEL 1 GOTO DONE
+
+call wcc386 /d2 /3s src\render\voxel.c -fo=bin\voxel.obj
+IF ERRORLEVEL 1 GOTO DONE
+
 call wcc386 /d2 /3s src\ui\menu.c -fo=bin\menu.obj
 IF ERRORLEVEL 1 GOTO DONE
 
 call wcc386 /d2 /3s src\ui\dialog.c -fo=bin\dialog.obj
+IF ERRORLEVEL 1 GOTO DONE
+
+call wcc386 /d2 /3s src\ui\widgets.c -fo=bin\widgets.obj
 IF ERRORLEVEL 1 GOTO DONE
 
 call wcc386 /d2 /3s src\2d\camera.c -fo=bin\camera2d.obj

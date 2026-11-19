@@ -18,6 +18,12 @@ struct freak_texture {
     uint8_t *pixels;
 };
 
+struct freak_metaball {
+    int x;
+    int y;
+    int radius;
+};
+
 /* Allocates one standard texture page.  Returns non-zero on success. */
 int freak_texture_create(struct freak_texture *texture);
 void freak_texture_destroy(struct freak_texture *texture);
@@ -68,6 +74,13 @@ void freak_texture_smudge_up(struct freak_texture *destination,
                              const struct freak_texture *source,
                              unsigned int seed, uint8_t palette_base,
                              uint8_t palette_range);
+void freak_texture_metaballs(struct freak_texture *texture,
+                             const struct freak_metaball *balls,
+                             unsigned int count, uint8_t palette_base,
+                             uint8_t palette_range);
+void freak_texture_water_ripple(struct freak_texture *destination,
+                                const struct freak_texture *source,
+                                unsigned int phase, int amplitude);
 
 /* Hot-path wrapped pixel access. texture must be valid; the result is an
    lvalue, so it supports both reads and writes. Each argument is evaluated

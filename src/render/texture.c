@@ -382,4 +382,59 @@ void freak_texture_smudge_up(struct freak_texture *destination,
     }
 }
 
+void freak_texture_metaballs(struct freak_texture *texture,
+                             const struct freak_metaball *balls,
+                             unsigned int count, uint8_t palette_base,
+                             uint8_t palette_range)
+{
+    int x;
+    int y;
+    int dx;
+    int dy;
+    long distance;
+    long value;
+    unsigned int index;
+
+    if (texture == 0 || texture->pixels == 0 || balls == 0 || count == 0 ||
+        palette_range == 0)
+        return;
+    for (y = 0; y < FREAK_TEXTURE_HEIGHT; ++y)
+        for (x = 0; x < FREAK_TEXTURE_WIDTH; ++x) {
+            value = 0;
+            for (index = 0; index < count; ++index) {
+                dx = x - balls[index].x;
+                dy = y - balls[index].y;
+                distance = (long)dx * dx + (long)dy * dy + 1;
+                value += ((long)balls[index].radius * balls[index].radius * 32) /
+                         distance;
+            }
+            if (value > 32767) value = 32767;
+            freak_texture_pixel(texture, x, y) = texture_palette_colour(
+                (int)(value * 2 - 32768), palette_base, palette_range);
+        }
+}
+
+void freak_texture_water_ripple(struct freak_texture *destination,
+                                const struct freak_texture *source,
+                                unsigned int phase, int amplitude)
+{
+    int x;
+    int y;
+    int offset_x;
+    int offset_y;
+
+    if (destination == 0 || source == 0 || destination->pixels == 0 ||
+        source->pixels == 0)
+        return;
+    for (y = 0; y < FREAK_TEXTURE_HEIGHT; ++y)
+        for (x = 0; x < FREAK_TEXTURE_WIDTH; ++x) {
+            offset_x = fixed_to_int(fixed_sin((y * 7 + phase * 5) & 1023) *
+                                    amplitude);
+            offset_y = fixed_to_int(fixed_sin((x * 5 + phase * 3) & 1023) *
+                                    amplitude);
+            freak_texture_pixel(destination, x, y) =
+                freak_texture_pixel(source, x + offset_x, y + offset_y);
+        }
+}
+
 
