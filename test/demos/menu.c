@@ -1,5 +1,5 @@
 #include <malloc.h>
-#include "../src/freak.h"
+#include "../../src/freak.h"
 
 static const struct freak_menu_item options_items[] = {
     {"Sound", 2, 0, 1}, {"Controls", 3, 0, 1}, {"Back", FREAK_MENU_BACK, 0, 1}};

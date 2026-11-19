@@ -1,5 +1,5 @@
 #include <malloc.h>
-#include "../src/freak.h"
+#include "../../src/freak.h"
 
 static const unsigned char sprite_bits[64] = {
     0,0,0,0,12,0,0,0, 0,0,0,12,14,0,0,0,

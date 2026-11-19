@@ -9,7 +9,7 @@
 #include <malloc.h>
 #include <stdio.h>
 
-#include "../src/freak.h"
+#include "../../src/freak.h"
 
 #define GALLERY_COLUMNS 5
 #define GALLERY_ROWS    2
