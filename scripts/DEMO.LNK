@@ -41,6 +41,13 @@ file bin\plat2d
 file bin\physics
 file bin\camera
 file bin\audio
+file bin\sblaster
+file bin\midi
+file bin\mixer
+file bin\asset
+file bin\opl
+file bin\seq
+file bin\tracker
 file bin\poly
 file bin\fixed
 file bin\noise

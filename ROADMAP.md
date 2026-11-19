@@ -91,17 +91,17 @@ steps should favour small, visible demos that harden reusable library pieces.
 
 ## Sound and music
 
-- [ ] **PCM effects** — Sound Blaster detection, 8-bit sample playback,
+- [x] **PCM effects** — Sound Blaster detection, 8-bit sample playback,
   DMA/IRQ buffering, volume/pan, looping, and a channel mixer.
-- [ ] **Music playback** — IMF/AdLib (OPL2) support first, then MIDI/MPU-401
+- [x] **Music playback** — IMF/AdLib (OPL2) support first, then MIDI/MPU-401
   where hardware permits.
-- [ ] **Tracker music** — a compact MOD/S3M/XM-style player or converter for
+- [x] **Tracker music** — a compact MOD/S3M/XM-style player or converter for
   small DOS-friendly module files.
-- [ ] **Sequencer** — pattern-based event/music sequencer that can also drive
+- [x] **Sequencer** — pattern-based event/music sequencer that can also drive
   palette, camera, and demo effects.
-- [ ] **Audio assets** — WAV-to-raw conversion, resampling, normalisation,
+- [x] **Audio assets** — WAV-to-raw conversion, resampling, normalisation,
   loop points, and a small sound-bank format.
-- [ ] **Audio demo** — mixer visualiser plus a tiny music/sound-effects scene.
+- [x] **Audio demo** — mixer visualiser plus a tiny music/sound-effects scene.
 
 ## Tooling and quality
 

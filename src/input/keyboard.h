@@ -12,6 +12,15 @@
 #include <stdint.h>
 
 #define FREAK_KEY_ESCAPE 0x01
+#define FREAK_KEY_1      0x02
+#define FREAK_KEY_2      0x03
+#define FREAK_KEY_3      0x04
+#define FREAK_KEY_4      0x05
+#define FREAK_KEY_5      0x06
+#define FREAK_KEY_6      0x07
+#define FREAK_KEY_7      0x08
+#define FREAK_KEY_8      0x09
+#define FREAK_KEY_9      0x0a
 #define FREAK_KEY_0      0x0b
 #define FREAK_KEY_BACKSPACE 0x0e
 #define FREAK_KEY_R      0x13
@@ -23,6 +32,7 @@
 #define FREAK_KEY_A      0x1e
 #define FREAK_KEY_D      0x20
 #define FREAK_KEY_S      0x1f
+#define FREAK_KEY_T      0x14
 #define FREAK_KEY_W      0x11
 
 /* Installs a raw IRQ-1 handler for continuous keyboard state. */

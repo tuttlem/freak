@@ -121,6 +121,27 @@ IF ERRORLEVEL 1 GOTO DONE
 call wcc386 /d2 /3s src\dos\audio.c -fo=bin\audio.obj
 IF ERRORLEVEL 1 GOTO DONE
 
+call wcc386 /d2 /3s src\dos\sblaster.c -fo=bin\sblaster.obj
+IF ERRORLEVEL 1 GOTO DONE
+
+call wcc386 /d2 /3s src\dos\midi.c -fo=bin\midi.obj
+IF ERRORLEVEL 1 GOTO DONE
+
+call wcc386 /d2 /3s src\audio\mixer.c -fo=bin\mixer.obj
+IF ERRORLEVEL 1 GOTO DONE
+
+call wcc386 /d2 /3s src\audio\asset.c -fo=bin\asset.obj
+IF ERRORLEVEL 1 GOTO DONE
+
+call wcc386 /d2 /3s src\audio\opl.c -fo=bin\opl.obj
+IF ERRORLEVEL 1 GOTO DONE
+
+call wcc386 /d2 /3s src\audio\seq.c -fo=bin\seq.obj
+IF ERRORLEVEL 1 GOTO DONE
+
+call wcc386 /d2 /3s src\audio\tracker.c -fo=bin\tracker.obj
+IF ERRORLEVEL 1 GOTO DONE
+
 call wcc386 /d2 /3s src\render\poly.c -fo=bin\poly.obj
 IF ERRORLEVEL 1 GOTO DONE
 

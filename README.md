@@ -41,3 +41,27 @@ cooling palette-ramp operation used for fire today and smoke tomorrow.
 `freak_rng_streams_seed` for the standard gameplay, particles, and visuals
 streams. This keeps a particle effect from changing gameplay randomness and
 makes a reported seed reproducible.
+
+## Sound and music
+
+`audio/mixer` is an eight-channel, fixed-point PCM mixer with per-channel
+volume, pan, looping, mono/stereo output, and Sound-Blaster-ready unsigned
+8-bit output.  `dos/sblaster` parses the conventional `BLASTER` setting,
+detects the DSP, and starts an auto-init DMA stream from a caller-owned
+conventional-memory ring buffer. The owning DOS-extender layer supplies that
+buffer's physical address, installs its normal IRQ wrapper, and calls
+`freak_sb_stream_irq` there to refill and acknowledge each block. This keeps
+the hardware layer independent of any particular DOS extender.
+
+`audio/asset` loads raw signed/unsigned PCM and PCM WAV (8/16-bit mono or
+stereo), resamples, normalises, handles loop points, saves raw output, and
+loads compact `FSBK` sound banks. `audio/tracker` plays built-in patterns or
+the compact `FTR1` row-major tracker asset. `audio/seq` is the device-neutral
+event sequencer for music or visual cues. `audio/opl` plays OPL2/IMF streams,
+while `dos/midi` uses MPU-401 UART mode where a compatible interface exists.
+
+The Utilities menu keeps the outputs deliberately separate: **PC Speaker:
+music & effects** has the scale, tracker (`T`), and `1`–`8` effects;
+**Sound Blaster: PCM scale** allocates a conventional DMA buffer and plays a
+looping 8-bit PCM scale only through an available Sound Blaster; **MIDI:
+MPU-401 scale** sends its scale only through an available MPU-401 interface.

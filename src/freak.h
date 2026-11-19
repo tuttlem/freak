@@ -52,6 +52,13 @@
 #include "game/physics.h"
 #include "game/camera.h"
 #include "dos/audio.h"
+#include "dos/sblaster.h"
+#include "dos/midi.h"
+#include "audio/mixer.h"
+#include "audio/asset.h"
+#include "audio/opl.h"
+#include "audio/seq.h"
+#include "audio/tracker.h"
 
 
 #endif /* __freak_h_ */

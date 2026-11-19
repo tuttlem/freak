@@ -28,6 +28,9 @@
 #define DEMO_XFORM            22
 #define DEMO_TEXT_EFFECTS     23
 #define DEMO_VOXEL             24
+#define DEMO_PC_SPEAKER        25
+#define DEMO_SOUND_BLASTER     26
+#define DEMO_MIDI              27
 
 extern int freak_demo_texture_gallery(void);
 extern int freak_demo_utilities(void);
@@ -52,9 +55,12 @@ static const struct freak_menu texture_menu = {"Textures", texture_items, 2};
 static const struct freak_menu_item utility_items[] = {
     {"Sprites, fonts & transitions", DEMO_UTILITIES, 0, 1},
     {"UI controls", DEMO_UI, 0, 1},
+    {"PC Speaker: music & effects", DEMO_PC_SPEAKER, 0, 1},
+    {"Sound Blaster: PCM scale", DEMO_SOUND_BLASTER, 0, 1},
+    {"MIDI: MPU-401 scale", DEMO_MIDI, 0, 1},
     {"Back", FREAK_MENU_BACK, 0, 1}
 };
-static const struct freak_menu utility_menu = {"Utilities", utility_items, 3};
+static const struct freak_menu utility_menu = {"Utilities", utility_items, 6};
 static const struct freak_menu_item effects_items[] = {
     {"Palette fades & cycling", DEMO_PALETTE_EFFECTS, 0, 1},
     {"Blend modes", DEMO_BLEND_EFFECTS, 0, 1},
@@ -1048,6 +1054,258 @@ static void run_voxel(void)
     freak_texture_destroy(&height);
 }
 
+static void audio_sequence_event(const struct freak_sequence_event *event, void *user)
+{
+    uint16_t *current_tone = (uint16_t *)user;
+    if (event->type == 1) {
+        if (current_tone) *current_tone = event->value;
+        freak_audio_tone(event->value);
+    }
+    if (event->type == 2) {
+        if (current_tone) *current_tone = 0;
+        freak_audio_silence();
+    }
+}
+
+static void audio_tracker_event(uint8_t channel,
+                                const struct freak_tracker_cell *cell, void *user)
+{
+    static const uint16_t notes[] = {0, 262, 294, 330, 349, 392, 440, 494, 523};
+    uint16_t *current_tone = (uint16_t *)user;
+    (void)channel;
+    if (cell->note < sizeof(notes) / sizeof(notes[0])) {
+        if (current_tone) *current_tone = notes[cell->note];
+        freak_audio_tone(notes[cell->note]);
+    }
+}
+
+static int audio_number_effect(void)
+{
+    if (freak_input_key_pressed(FREAK_KEY_1)) return 1;
+    if (freak_input_key_pressed(FREAK_KEY_2)) return 2;
+    if (freak_input_key_pressed(FREAK_KEY_3)) return 3;
+    if (freak_input_key_pressed(FREAK_KEY_4)) return 4;
+    if (freak_input_key_pressed(FREAK_KEY_5)) return 5;
+    if (freak_input_key_pressed(FREAK_KEY_6)) return 6;
+    if (freak_input_key_pressed(FREAK_KEY_7)) return 7;
+    if (freak_input_key_pressed(FREAK_KEY_8)) return 8;
+    return 0;
+}
+
+static uint16_t audio_effect_hertz(int effect, unsigned long age, struct freak_rng *rng)
+{
+    switch (effect) {
+    case 1: return (uint16_t)freak_rng_between(rng, 120, 3000); /* white noise */
+    case 2: return (uint16_t)(180 - (age > 20 ? 100 : age * 4)); /* low thump */
+    case 3: return (uint16_t)(280 + (age > 28 ? 28 : age) * 45); /* rising chirp */
+    case 4: return (uint16_t)(1800 - (age > 30 ? 30 : age) * 48); /* falling chirp */
+    case 5: return (uint16_t)(age < 12 ? 523 : (age < 24 ? 659 : 784)); /* chime */
+    case 6: return (uint16_t)(900 + ((age * 173) % 1300)); /* zap */
+    case 7: return 1400; /* tick */
+    case 8: return (uint16_t)freak_rng_between(rng, 80, 900); /* soft burst */
+    }
+    return 0;
+}
+
+static void run_pc_speaker(void)
+{
+    static const struct freak_sequence_event tune[] = {
+        {0,1,0,262},{35,1,0,294},{70,1,0,330},{105,1,0,349},
+        {140,1,0,392},{175,1,0,440},{210,1,0,494},{245,1,0,523},
+        {280,2,0,0}
+    };
+    static const struct freak_sequence_pattern tune_patterns[] = {{tune, 9, 315}};
+    static const uint8_t tune_order[] = {0};
+    static const struct freak_tracker_cell tracker_cells[] = {
+        {1,0,0,0},{0,0,0,0}, {3,0,0,0},{0,0,0,0},
+        {5,0,0,0},{0,0,0,0}, {8,0,0,0},{0,0,0,0},
+        {5,0,0,0},{0,0,0,0}, {3,0,0,0},{0,0,0,0},
+        {1,0,0,0},{0,0,0,0}, {0,0,0,1},{0,0,0,0}
+    };
+    static const struct freak_tracker_song tracker_song = {tracker_cells, 8, 2, 2, 1};
+    struct freak_sequence sequence;
+    struct freak_tracker tracker;
+    struct freak_sound_blaster sound_blaster;
+    struct freak_mpu401 mpu;
+    struct freak_mixer mixer;
+    struct freak_audio_sample sample;
+    struct freak_audio_sample noise_sample;
+    struct freak_audio_sample square_sample;
+    int8_t wave[128];
+    int8_t noise[128];
+    int8_t square[128];
+    int8_t mixed[128];
+    unsigned long last_tick, now, elapsed, effect_start, effect_end;
+    uint16_t current_tone;
+    int index, x, y, sb_found, mpu_found, tracker_mode, effect, active_effect;
+    struct freak_rng sound_rng;
+    char hardware_text[64];
+
+    freak_rng_seed(&sound_rng, 0x53465831UL);
+    for (index = 0; index < 128; ++index) {
+        wave[index] = (int8_t)((index < 64 ? index : 127 - index) * 4 - 126);
+        noise[index] = (int8_t)(freak_rng_range(&sound_rng, 255) - 127);
+        square[index] = (int8_t)(index < 64 ? 90 : -90);
+    }
+    sample.data = wave; sample.length = 128; sample.loop_start = 0; sample.loop_end = 128;
+    sample.sample_rate = 8000; sample.loop = 0;
+    noise_sample = sample; noise_sample.data = noise;
+    square_sample = sample; square_sample.data = square;
+    freak_mixer_init(&mixer, 8000);
+    freak_sequence_play_patterns(&sequence, tune_patterns, 1, tune_order, 1, 1);
+    freak_tracker_stop(&tracker); tracker_mode = 0;
+    sb_found = freak_sb_detect(&sound_blaster);
+    mpu_found = freak_mpu401_open(&mpu, 0x330);
+    sprintf(hardware_text, "Sound Blaster: %s   MPU-401: %s",
+            sb_found ? "ready" : "not found", mpu_found ? "ready" : "not found");
+    effect_start = effect_end = 0; active_effect = 0; current_tone = 262;
+    last_tick = freak_timer_ticks(); freak_input_clear_events();
+    while (1) {
+        freak_input_update();
+        if (freak_input_pressed(&freak_input_default_bindings, FREAK_ACTION_BACK)) break;
+        now = freak_timer_ticks(); elapsed = now - last_tick; last_tick = now;
+        effect = audio_number_effect();
+        if (effect) {
+            active_effect = effect;
+            effect_start = now;
+            effect_end = now + (effect == 7 ? 7 : (effect == 8 ? 36 : 30));
+            if (effect == 1 || effect == 8)
+                freak_mixer_play(&mixer, &noise_sample, 8000, 185, 128, 0);
+            else if (effect == 3 || effect == 6)
+                freak_mixer_play(&mixer, &square_sample, 8000, 190, 128, 0);
+            else
+                freak_mixer_play(&mixer, &sample, 8000, 180, 128, 0);
+        }
+        if (freak_input_key_pressed(FREAK_KEY_T)) {
+            tracker_mode = !tracker_mode;
+            if (tracker_mode) { freak_sequence_stop(&sequence); freak_tracker_play(&tracker, &tracker_song); }
+            else { freak_tracker_stop(&tracker); freak_sequence_play_patterns(&sequence, tune_patterns, 1, tune_order, 1, 1); }
+        }
+        if (now < effect_end) freak_audio_tone(audio_effect_hertz(active_effect, now - effect_start, &sound_rng));
+        else {
+            if (effect_end) { freak_audio_tone(current_tone); effect_end = 0; active_effect = 0; }
+            if (tracker_mode) freak_tracker_update(&tracker, elapsed, audio_tracker_event, &current_tone);
+            else freak_sequence_update(&sequence, (uint32_t)elapsed, audio_sequence_event, &current_tone);
+        }
+        if (freak_input_pressed(&freak_input_default_bindings, FREAK_ACTION_ACCEPT))
+            freak_mixer_play(&mixer, &sample, 8000, 210, 128, 0);
+        freak_mixer_mix(&mixer, mixed, 128);
+        freak_clear_buffer(0, screen);
+        for (x = 0; x < 128; ++x) {
+            y = 115 - mixed[x] / 3;
+            freak_draw_line(screen, 40 + x * 2, 115, 40 + x * 2, y, 80);
+        }
+        freak_fill_rect(screen, 40, 140, 40 + (int)freak_mixer_active(&mixer) * 28,
+                        151, 64);
+        freak_font_text(screen, 8, 8, &font, "PC Speaker: music + effects", 15);
+        freak_font_text(screen, 8, 18, &font, "Slow C major scale  1-8: sound effects  T: tracker", 15);
+        freak_font_text(screen, 8, 28, &font, tracker_mode ? "Tracker pattern playing" : "Event sequencer playing", 15);
+        freak_font_text(screen, 8, 38, &font, hardware_text, 15);
+        freak_font_text(screen, 8, 170, &font, "1 noise  2 thump  3 rise  4 fall  5 chime  6 zap  7 tick  8 burst", 15);
+        freak_wait_vsync(); freak_copy_buffer(freak_vga, screen);
+    }
+    freak_audio_silence();
+    if (sb_found) freak_sb_stop(&sound_blaster);
+    freak_mpu401_close(&mpu);
+}
+
+static void sound_blaster_fill_scale(struct freak_sb_dma_buffer *buffer)
+{
+    static const uint16_t notes[] = {262,294,330,349,392,440,494,523};
+    uint32_t phase = 0;
+    unsigned int index, note, note_bytes, local;
+    int value, amplitude;
+    if (!buffer || !buffer->data) return;
+    note_bytes = buffer->bytes / 8;
+    for (index = 0; index < buffer->bytes; ++index) {
+        note = index / note_bytes;
+        local = index % note_bytes;
+        if (local == 0) phase = 0;
+        phase += notes[note];
+        if (phase >= 8000U) phase -= 8000U;
+        value = phase < 4000U ? (int)(phase * 254U / 4000U) - 127 :
+                                127 - (int)((phase - 4000U) * 254U / 4000U);
+        amplitude = 42;
+        if (local < 96U) amplitude = (int)local * 42 / 96;
+        else if (local > note_bytes - 96U)
+            amplitude = (int)(note_bytes - local) * 42 / 96;
+        value = value * amplitude / 127;
+        buffer->data[index] = (uint8_t)(128 + value);
+    }
+}
+
+static void run_sound_blaster(void)
+{
+    struct freak_sound_blaster card;
+    struct freak_sb_dma_buffer buffer;
+    int detected, playing;
+    char status[64];
+
+    buffer.data = 0; buffer.physical_address = 0; buffer.bytes = 0;
+    buffer.segment = buffer.selector = 0;
+    detected = freak_sb_detect(&card); playing = 0;
+    if (!detected)
+        sprintf(status, "No Sound Blaster DSP found (BLASTER / port %03X)", card.base);
+    else if (!freak_sb_dma_buffer_alloc(&buffer, 16384))
+        sprintf(status, "Sound Blaster found; conventional DMA buffer unavailable");
+    else {
+        sound_blaster_fill_scale(&buffer);
+        playing = freak_sb_start_dma(&card, buffer.physical_address, buffer.bytes, 8000);
+        sprintf(status, playing ? "Playing 8-bit PCM through Sound Blaster" :
+                                  "Sound Blaster found; DMA start failed");
+    }
+    freak_input_clear_events();
+    while (1) {
+        freak_input_update();
+        if (freak_input_pressed(&freak_input_default_bindings, FREAK_ACTION_BACK)) break;
+        freak_clear_buffer(0, screen);
+        freak_font_text(screen, 8, 8, &font, "Sound Blaster: PCM DMA", 15);
+        freak_font_text(screen, 8, 20, &font, status, playing ? 10 : 12);
+        freak_font_text(screen, 8, 40, &font, "Looping 2-second C major PCM scale at 8 kHz", 15);
+        freak_font_text(screen, 8, 52, &font, "This demo does not use the PC speaker.", 15);
+        freak_font_text(screen, 8, 180, &font, "Esc: back", 15);
+        freak_wait_vsync(); freak_copy_buffer(freak_vga, screen);
+    }
+    if (playing) freak_sb_stop(&card);
+    freak_sb_dma_buffer_free(&buffer);
+}
+
+static void run_midi(void)
+{
+    static const uint8_t notes[] = {60,62,64,65,67,69,71,72};
+    struct freak_mpu401 mpu;
+    unsigned long last_note, now;
+    unsigned int note = 0;
+    int available;
+    char status[64];
+
+    available = freak_mpu401_open(&mpu, 0x330);
+    sprintf(status, available ? "MPU-401 UART responds; sending C major scale" :
+                                "No MPU-401 MIDI interface found at 330h");
+    if (available) freak_midi_note_on(&mpu, 0, notes[note], 52);
+    last_note = freak_timer_ticks(); freak_input_clear_events();
+    while (1) {
+        freak_input_update();
+        if (freak_input_pressed(&freak_input_default_bindings, FREAK_ACTION_BACK)) break;
+        now = freak_timer_ticks();
+        if (available && now - last_note >= 35) {
+            freak_midi_note_off(&mpu, 0, notes[note]);
+            note = (note + 1) % (sizeof(notes) / sizeof(notes[0]));
+            freak_midi_note_on(&mpu, 0, notes[note], 52);
+            last_note = now;
+        }
+        freak_clear_buffer(0, screen);
+        freak_font_text(screen, 8, 8, &font, "MIDI: MPU-401 UART", 15);
+        freak_font_text(screen, 8, 20, &font, status, available ? 10 : 12);
+        freak_font_text(screen, 8, 40, &font, "Channel 1, gentle C major scale", 15);
+        freak_font_text(screen, 8, 52, &font, "A host MIDI synth/device is required for audible sound.", 15);
+        freak_font_text(screen, 8, 180, &font, "Esc: back", 15);
+        freak_wait_vsync(); freak_copy_buffer(freak_vga, screen);
+    }
+    if (available) freak_midi_note_off(&mpu, 0, notes[note]);
+    freak_mpu401_close(&mpu);
+}
+
 static void run_lighting(void)
 {
     struct freak_lighting2d lighting;
@@ -1373,6 +1631,21 @@ static void launch_demo(int action, int *running)
     } else if (action == DEMO_VOXEL) {
         freak_mouse_hide();
         run_voxel();
+        freak_mouse_show();
+        freak_input_clear_events();
+    } else if (action == DEMO_PC_SPEAKER) {
+        freak_mouse_hide();
+        run_pc_speaker();
+        freak_mouse_show();
+        freak_input_clear_events();
+    } else if (action == DEMO_SOUND_BLASTER) {
+        freak_mouse_hide();
+        run_sound_blaster();
+        freak_mouse_show();
+        freak_input_clear_events();
+    } else if (action == DEMO_MIDI) {
+        freak_mouse_hide();
+        run_midi();
         freak_mouse_show();
         freak_input_clear_events();
     } else if (action == DEMO_QUIT) {
