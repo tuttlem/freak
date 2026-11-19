@@ -7,6 +7,11 @@ the menu and calls these entry points.
 | --- | --- |
 | `triang.c` | flat, Gouraud, and textured triangles |
 | `cube.c` | cube transforms, painter sorting, and frame pacing |
+| `rast3d.c` | near clipping, back-face culling, screen bounds, and z buffering |
+| `shade3d.c` | 3D lights, bump, environment mapping, and glenz translucency |
+| `ray3d.c` | first-person grid raycasting and low-resolution ray tracing |
+| `tool3d.c` | F3M-style keyframe model data and camera helpers |
+| `mat3d.c` | material mapping modes, transparent texels, and palette lightmaps |
 | `sprites.c` | 2D camera, animation, and sprite batching |
 | `tilemap.c` | scrolling layered tile map |
 | `topdown.c` | collision, FOV, doors, paths, and pushing |

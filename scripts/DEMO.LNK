@@ -16,6 +16,11 @@ file bin\demotext
 file bin\demovoxl
 file bin\demotri
 file bin\democube
+file bin\demorast
+file bin\demoshd
+file bin\demoray
+file bin\demotool
+file bin\demomat
 file bin\demospr
 file bin\demotile
 file bin\demotop
@@ -69,6 +74,10 @@ file bin\opl
 file bin\seq
 file bin\tracker
 file bin\poly
+file bin\raster3d
+file bin\shade3d
+file bin\ray3d
+file bin\model3d
 file bin\fixed
 file bin\noise
 file bin\rng

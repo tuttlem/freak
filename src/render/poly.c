@@ -52,7 +52,7 @@ void hline_g(int x1, int x2, int y, uint8_t c1, uint8_t c2, uint8_t *buffer) {
   }
 }
 
-void hline_t(int x1, int x2, int y, int u1, int v1, int u2, int v2, uint8_t *texture, uint8_t *buffer) {
+void hline_t(int x1, int x2, int y, int u1, int v1, int u2, int v2, uint8_t *texture, uint8_t transparent, int keyed, uint8_t *buffer) {
   int l = x2 - x1;
   int original_x1 = x1;
   int original_l = l;
@@ -97,7 +97,7 @@ void hline_t(int x1, int x2, int y, int u1, int v1, int u2, int v2, uint8_t *tex
     cu += du;
     cv += dv;
 
-    *temp = texture[tofs];
+    if (!keyed || texture[tofs] != transparent) { *temp = texture[tofs]; }
     temp ++;
     l --;
   }
@@ -319,9 +319,30 @@ void freak_tri_t(int x1, int y1, int x2, int y2,
     hline_t(_scanlines[y].x1, _scanlines[y].x2, y, 
             _scanlines[y].u1, _scanlines[y].v1, 
             _scanlines[y].u2, _scanlines[y].v2, 
-            texture->pixels, buffer);
+            texture->pixels, 0, 0, buffer);
   }
 
+}
+
+void freak_tri_t_key(int x1, int y1, int x2, int y2,
+                     int x3, int y3, int u1, int v1, int u2, int v2,
+                     int u3, int v3, const struct freak_texture *texture,
+                     uint8_t transparent, uint8_t *buffer) {
+  int min_y = y1, max_y = y1, y = 0;
+  if (texture == 0 || texture->pixels == 0) { return; }
+  reset_poly_state();
+  scanline_t(x1, y1, x2, y2, u1, v1, u2, v2);
+  scanline_t(x2, y2, x3, y3, u2, v2, u3, v3);
+  scanline_t(x3, y3, x1, y1, u3, v3, u1, v1);
+  if (y2 < min_y) { min_y = y2; } if (y3 < min_y) { min_y = y3; }
+  if (y2 > max_y) { max_y = y2; } if (y3 > max_y) { max_y = y3; }
+  if (min_y < 0) { min_y = 0; } if (max_y > 199) { max_y = 199; }
+  for (y = min_y; y <= max_y; ++y) {
+    hline_t(_scanlines[y].x1, _scanlines[y].x2, y,
+            _scanlines[y].u1, _scanlines[y].v1,
+            _scanlines[y].u2, _scanlines[y].v2,
+            texture->pixels, transparent, 1, buffer);
+  }
 }
 
 static void reset_perspective_state(void) {
@@ -592,7 +613,7 @@ void freak_quad_t(int x1, int y1, int x2, int y2,
     hline_t(_scanlines[y].x1, _scanlines[y].x2, y, 
             _scanlines[y].u1, _scanlines[y].v1, 
             _scanlines[y].u2, _scanlines[y].v2, 
-            texture->pixels, buffer);
+            texture->pixels, 0, 0, buffer);
   }
 
 }

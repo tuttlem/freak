@@ -49,25 +49,25 @@ steps should favour small, visible demos that harden reusable library pieces.
 
 ## 3D and software rendering
 
-- [ ] **Rasterizer polish** — near-plane clipping, back-face culling, depth
+- [x] **Rasterizer polish** — near-plane clipping, back-face culling, depth
   buffer or painter sorting, screen clipping, and perspective correction.
-- [ ] **Materials** — flat, Gouraud, textured, affine/perspective texture
+- [x] **Materials** — flat, Gouraud, textured, affine/perspective texture
   mapping, transparency keys, and lightmapped surfaces.
-- [ ] **Lighting** — ambient/directional/point lights, attenuation, per-vertex
+- [x] **Lighting** — ambient/directional/point lights, attenuation, per-vertex
   Phong-style lighting, specular highlights, and normal interpolation.
-- [ ] **Bump mapping** — normal maps or palette-friendly approximations for
+- [x] **Bump mapping** — normal maps or palette-friendly approximations for
   embossed surfaces and moving lights.
-- [ ] **Environment mapping** — sphere mapping, cube-map-like lookup tables,
+- [x] **Environment mapping** — sphere mapping, cube-map-like lookup tables,
   chrome, water, and reflective-material demos.
-- [ ] **Glenz and translucency** — ordered translucent polygons, stipple/table
+- [x] **Glenz and translucency** — ordered translucent polygons, stipple/table
   blending, additive glow, and refraction-style distortions.
-- [ ] **Raycasting** — Wolfenstein-style grid renderer with textured walls,
+- [x] **Raycasting** — Wolfenstein-style grid renderer with textured walls,
   doors, sprites, floor/ceiling casting, and a playable maze demo.
-- [ ] **Raytracing** — a small offline or low-resolution realtime renderer for
+- [x] **Raytracing** — a small offline or low-resolution realtime renderer for
   spheres/planes, shadows, reflections, and refractions.
-- [ ] **Model pipeline** — compact mesh format, normals/UVs/materials,
+- [x] **Model pipeline** — compact mesh format, normals/UVs/materials,
   keyframe animation, and host-side conversion.
-- [ ] **Camera toolkit** — FPS, orbit, chase, rail, shake, and smooth camera
+- [x] **Camera toolkit** — FPS, orbit, chase, rail, shake, and smooth camera
   transitions.
 
 ## Demo-scene and visual effects
@@ -97,7 +97,7 @@ steps should favour small, visible demos that harden reusable library pieces.
   where hardware permits.
 - [x] **Tracker music** — a compact MOD/S3M/XM-style player or converter for
   small DOS-friendly module files.
-- [x] **Sequencer** — pattern-based event/music sequencer that can also drive
+- [x] **Sequencer** — pattern-b ased event/music sequencer that can also drive
   palette, camera, and demo effects.
 - [x] **Audio assets** — WAV-to-raw conversion, resampling, normalisation,
   loop points, and a small sound-bank format.
@@ -111,13 +111,13 @@ steps should favour small, visible demos that harden reusable library pieces.
   sprite-sheet slicing, and transparent-colour handling.
 - [ ] **Build ergonomics** — named demo targets, dependency generation,
   incremental builds, release/debug profiles, and a one-command clean build.
-- [ ] **Demo launcher** — a single DOS menu executable for selecting every
+- [x] **Demo launcher** — a single DOS menu executable for selecting every
   gallery and test program.
 - [ ] **Regression captures** — deterministic headless builds plus checksum or
   screenshot-based checks for rendering primitives.
 - [ ] **API guide** — short focused examples for the public header and every
   major subsystem.
-- [ ] **Reference demos** — one focused, documented demo per major subsystem.
+- [x] **Reference demos** — one focused, documented demo per major subsystem.
 
 ## Game-facing systems
 

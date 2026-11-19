@@ -75,18 +75,38 @@ inline void vec3_div(vec3 *c, vec3 *a, fixed f) {
   c->z = fixed_div(a->z, f);
 }
 
-inline fixed vec3_len_sqr(vec3 *v) {
+/* Core geometric primitives.  Keep these here rather than duplicating small
+   renderer-local helpers so gameplay, collision, and render code agree on
+   the same fixed-point operations. */
+inline fixed vec3_dot(const vec3 *a, const vec3 *b) {
+  return fixed_mul(a->x, b->x) +
+    fixed_mul(a->y, b->y) +
+    fixed_mul(a->z, b->z);
+}
+
+inline void vec3_cross(vec3 *out, const vec3 *a, const vec3 *b) {
+  vec3 result;
+  result.x = fixed_mul(a->y, b->z) - fixed_mul(a->z, b->y);
+  result.y = fixed_mul(a->z, b->x) - fixed_mul(a->x, b->z);
+  result.z = fixed_mul(a->x, b->y) - fixed_mul(a->y, b->x);
+  *out = result;
+}
+
+inline fixed vec3_len_sqr(const vec3 *v) {
   return fixed_mul(v->x, v->x) +
     fixed_mul(v->y, v->y) +
     fixed_mul(v->z, v->z);
 }
 
-inline fixed vec3_len(vec3 *v) {
+inline fixed vec3_len(const vec3 *v) {
   return fixed_sqrt(vec3_len_sqr(v));
 }
 
 inline void vec3_normalize(vec3 *v) {
-  fixed inv_len = fixed_div(FIXED_ONE, vec3_len(v));
+  fixed length = vec3_len(v);
+  fixed inv_len;
+  if (length <= 0) { return; }
+  inv_len = fixed_div(FIXED_ONE, length);
   v->x = fixed_mul(v->x, inv_len);
   v->y = fixed_mul(v->y, inv_len);
   v->z = fixed_mul(v->z, inv_len);

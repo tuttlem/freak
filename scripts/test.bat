@@ -49,6 +49,16 @@ call wcc386 /d2 /3s test\demos\triang.c -fo=bin\demotri.obj >> bin\test.log
 IF ERRORLEVEL 1 GOTO FAIL
 call wcc386 /d2 /3s test\demos\cube.c -fo=bin\democube.obj >> bin\test.log
 IF ERRORLEVEL 1 GOTO FAIL
+call wcc386 /d2 /3s test\demos\rast3d.c -fo=bin\demorast.obj >> bin\test.log
+IF ERRORLEVEL 1 GOTO FAIL
+call wcc386 /d2 /3s test\demos\shade3d.c -fo=bin\demoshd.obj >> bin\test.log
+IF ERRORLEVEL 1 GOTO FAIL
+call wcc386 /d2 /3s test\demos\ray3d.c -fo=bin\demoray.obj >> bin\test.log
+IF ERRORLEVEL 1 GOTO FAIL
+call wcc386 /d2 /3s test\demos\tool3d.c -fo=bin\demotool.obj >> bin\test.log
+IF ERRORLEVEL 1 GOTO FAIL
+call wcc386 /d2 /3s test\demos\mat3d.c -fo=bin\demomat.obj >> bin\test.log
+IF ERRORLEVEL 1 GOTO FAIL
 call wcc386 /d2 /3s test\demos\sprites.c -fo=bin\demospr.obj >> bin\test.log
 IF ERRORLEVEL 1 GOTO FAIL
 call wcc386 /d2 /3s test\demos\tilemap.c -fo=bin\demotile.obj >> bin\test.log

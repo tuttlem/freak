@@ -145,6 +145,18 @@ IF ERRORLEVEL 1 GOTO DONE
 call wcc386 /d2 /3s src\render\poly.c -fo=bin\poly.obj
 IF ERRORLEVEL 1 GOTO DONE
 
+call wcc386 /d2 /3s src\render\raster3d.c -fo=bin\raster3d.obj
+IF ERRORLEVEL 1 GOTO DONE
+
+call wcc386 /d2 /3s src\render\shade3d.c -fo=bin\shade3d.obj
+IF ERRORLEVEL 1 GOTO DONE
+
+call wcc386 /d2 /3s src\render\ray3d.c -fo=bin\ray3d.obj
+IF ERRORLEVEL 1 GOTO DONE
+
+call wcc386 /d2 /3s src\render\model3d.c -fo=bin\model3d.obj
+IF ERRORLEVEL 1 GOTO DONE
+
 call wcc386 /d2 /3s src\core\mat.c -fo=bin\mat.obj
 IF ERRORLEVEL 1 GOTO DONE
 

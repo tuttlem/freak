@@ -28,6 +28,13 @@ void freak_tri_t(int x1, int y1, int x2, int y2,
                  int u2, int v2, int u3, int v3,
                  const struct freak_texture *texture, uint8_t *buffer);
 
+/* Affine texture mapping that leaves texels matching transparent untouched. */
+void freak_tri_t_key(int x1, int y1, int x2, int y2,
+                     int x3, int y3, int u1, int v1,
+                     int u2, int v2, int u3, int v3,
+                     const struct freak_texture *texture, uint8_t transparent,
+                     uint8_t *buffer);
+
 /* Perspective-correct textured triangle.  z values are camera-space 16.16
    depths; u/v address a 256x256 texture. */
 void freak_tri_pt(int x1, int y1, fixed z1, int u1, int v1,

@@ -3,9 +3,24 @@
 #include "demofx.h"
 #include "demo3d.h"
 #include "demo2d.h"
+#include "demor3d.h"
+#include "demosh3d.h"
+#include "demoray.h"
+#include "demotol3.h"
+#include "demomat3.h"
 #include "demos/democom.h"
 
 #define DEMO_QUIT 17
+#define DEMO_RASTER3D 28
+#define DEMO_LIGHT3D 29
+#define DEMO_BUMP3D 30
+#define DEMO_ENV3D 31
+#define DEMO_GLENZ3D 32
+#define DEMO_RAYCAST3D 33
+#define DEMO_RAYTRACE3D 34
+#define DEMO_MODEL3D 35
+#define DEMO_CAMERA3D 36
+#define DEMO_MATERIAL3D 37
 extern int freak_demo_texture_gallery(void);
 extern int freak_demo_utilities(void);
 extern int freak_demo_ui(void);
@@ -15,12 +30,30 @@ struct freak_timing demo_timing;
 static struct freak_demo_context context;
 static struct freak_menu_style style = {1, 15, 15, 1, 12, 8, 6, 10};
 #define I(s, a) {s, a, 0, 1}
-static const struct freak_menu_item ritems[] = {
+static const struct freak_menu_item basicitems[] = {
     I("Flat triangles", 1),          I("Gouraud triangles", 2),
     I("Textured triangles", 3),      I("Spinning cube (flat)", 4),
     I("Spinning cube (Gouraud)", 5), I("Spinning cube (textured)", 6),
-    I("Cube frame pacing", 7),       I("Back", FREAK_MENU_BACK)};
-static const struct freak_menu rmenu = {"Rendering", ritems, 8};
+    I("Cube frame pacing", 7),       I("Rasterizer depth & clip", DEMO_RASTER3D),
+    I("Materials & lightmaps", DEMO_MATERIAL3D),
+    I("Back", FREAK_MENU_BACK)};
+static const struct freak_menu basicmenu = {"Raster & materials", basicitems, 10};
+static const struct freak_menu_item shadeitems[] = {
+    I("3D lights & specular", DEMO_LIGHT3D), I("Bump mapping", DEMO_BUMP3D),
+    I("Environment mapping", DEMO_ENV3D), I("Glenz translucency", DEMO_GLENZ3D),
+    I("Back", FREAK_MENU_BACK)};
+static const struct freak_menu shademenu = {"Shading", shadeitems, 5};
+static const struct freak_menu_item rayitems[] = {
+    I("Raycast maze", DEMO_RAYCAST3D), I("Raytrace preview", DEMO_RAYTRACE3D),
+    I("Model pipeline", DEMO_MODEL3D), I("Camera toolkit", DEMO_CAMERA3D),
+    I("Back", FREAK_MENU_BACK)};
+static const struct freak_menu raymenu = {"Rays & 3D tools", rayitems, 5};
+static const struct freak_menu_item ritems[] = {
+    {"Raster & materials", 0, &basicmenu, 1},
+    {"Lighting & effects", 0, &shademenu, 1},
+    {"Rays, models & camera", 0, &raymenu, 1},
+    I("Back", FREAK_MENU_BACK)};
+static const struct freak_menu rmenu = {"3D software rendering", ritems, 4};
 static const struct freak_menu_item titems[] = {I("Noise, plasma & fire", 8),
                                                 I("Back", FREAK_MENU_BACK)};
 static const struct freak_menu tmenu = {"Textures", titems, 2};
@@ -100,6 +133,26 @@ static void run(int a) {
         freak_demo_triangles(a);
     } else if (a <= 7) {
         freak_demo_cube(a);
+    } else if (a == DEMO_RASTER3D) {
+        freak_demo_raster3d();
+    } else if (a == DEMO_LIGHT3D) {
+        freak_demo_lighting3d();
+    } else if (a == DEMO_BUMP3D) {
+        freak_demo_bump3d();
+    } else if (a == DEMO_ENV3D) {
+        freak_demo_environment3d();
+    } else if (a == DEMO_GLENZ3D) {
+        freak_demo_glenz3d();
+    } else if (a == DEMO_RAYCAST3D) {
+        freak_demo_raycast3d();
+    } else if (a == DEMO_RAYTRACE3D) {
+        freak_demo_raytrace3d();
+    } else if (a == DEMO_MODEL3D) {
+        freak_demo_model3d();
+    } else if (a == DEMO_CAMERA3D) {
+        freak_demo_camera3d();
+    } else if (a == DEMO_MATERIAL3D) {
+        freak_demo_material3d();
     } else if (a == 8) {
         freak_demo_texture_gallery();
     } else if (a == 9) {
