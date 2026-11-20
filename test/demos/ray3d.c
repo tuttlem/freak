@@ -61,6 +61,7 @@ void freak_demo_raycast3d(void)
             angle = yaw + ((long)(x - 160) * FIXED_ONE * 3L) / 4L;
             direction_x = fixed_sin_interp(angle); direction_y = fixed_cos_interp(angle);
             if (!freak_ray3d_cast(&map, player_x, player_y, direction_x, direction_y, int_to_fixed(12), &hit)) continue;
+            if (hit.distance < FIXED_ONE / 64) hit.distance = FIXED_ONE / 64;
             height = fixed_to_int(fixed_div(int_to_fixed(100), hit.distance));
             if (height > 199) height = 199;
             top = 100 - height / 2; bottom = 100 + height / 2;

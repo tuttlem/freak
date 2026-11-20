@@ -9,6 +9,8 @@ int freak_ray3d_cast(const struct freak_ray3d_map *map, fixed x, fixed y,
     fixed side_x;
     fixed side_y;
     fixed boundary;
+    fixed abs_x;
+    fixed abs_y;
     int step_x;
     int step_y;
     int cell_x;
@@ -16,14 +18,22 @@ int freak_ray3d_cast(const struct freak_ray3d_map *map, fixed x, fixed y,
     if (!map || !map->tiles || !hit) return 0;
     if (!direction_x && !direction_y) return 0;
     cell_x = fixed_to_int(x); cell_y = fixed_to_int(y);
-    distance_x = direction_x ? fixed_div(FIXED_ONE, direction_x < 0 ? -direction_x : direction_x) : int_to_fixed(32767);
-    distance_y = direction_y ? fixed_div(FIXED_ONE, direction_y < 0 ? -direction_y : direction_y) : int_to_fixed(32767);
-    if (direction_x < 0) {
+    abs_x = direction_x < 0 ? -direction_x : direction_x;
+    abs_y = direction_y < 0 ? -direction_y : direction_y;
+    /* Never divide by near-axis directions: their reciprocal can overflow the
+       16.16 range and raise a DOS divide exception. */
+    distance_x = abs_x < FIXED_ONE / 256 ? int_to_fixed(16384) : fixed_div(FIXED_ONE, abs_x);
+    distance_y = abs_y < FIXED_ONE / 256 ? int_to_fixed(16384) : fixed_div(FIXED_ONE, abs_y);
+    if (abs_x < FIXED_ONE / 256) {
+        step_x = 0; side_x = int_to_fixed(16384);
+    } else if (direction_x < 0) {
         step_x = -1; boundary = x - int_to_fixed(cell_x); side_x = fixed_mul(boundary, distance_x);
     } else {
         step_x = 1; boundary = int_to_fixed(cell_x + 1) - x; side_x = fixed_mul(boundary, distance_x);
     }
-    if (direction_y < 0) {
+    if (abs_y < FIXED_ONE / 256) {
+        step_y = 0; side_y = int_to_fixed(16384);
+    } else if (direction_y < 0) {
         step_y = -1; boundary = y - int_to_fixed(cell_y); side_y = fixed_mul(boundary, distance_y);
     } else {
         step_y = 1; boundary = int_to_fixed(cell_y + 1) - y; side_y = fixed_mul(boundary, distance_y);
@@ -33,6 +43,9 @@ int freak_ray3d_cast(const struct freak_ray3d_map *map, fixed x, fixed y,
         else { cell_y += step_y; hit->distance = side_y; side_y += distance_y; }
         if (cell_x < 0 || cell_y < 0 || cell_x >= map->width || cell_y >= map->height) return 0;
         if (map->tiles[cell_y * map->width + cell_x]) {
+            /* A ray starting exactly on a cell boundary may enter its first
+               wall at distance zero.  Keep the result projectable. */
+            if (hit->distance < FIXED_ONE / 64) hit->distance = FIXED_ONE / 64;
             hit->cell_x = cell_x; hit->cell_y = cell_y;
             hit->tile = map->tiles[cell_y * map->width + cell_x]; return 1;
         }
