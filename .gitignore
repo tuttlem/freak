@@ -1,3 +1,5 @@
 BIN
 TEST*.*
 bin
+__pycache__/
+*.py[cod]
