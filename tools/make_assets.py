@@ -27,6 +27,8 @@ def main():
     sprites = Image.new("RGBA", (32, 16), (0,0,0,0)); d=ImageDraw.Draw(sprites)
     d.rectangle((2,3,12,14), fill=(40,230,255,255)); d.rectangle((18,1,29,14), fill=(255,100,35,255))
     sprites.save(ASSETS / "sprites.png")
+    image.convert("RGB").save(ASSETS / "showcase.pcx")
+    image.convert("RGB").save(ASSETS / "showcase.bmp")
     (ASSETS / "ui.bdf").write_text("""STARTFONT 2.1\nFONTBOUNDINGBOX 8 8 0 0\nCHARS 1\nSTARTCHAR A\nENCODING 65\nBITMAP\n18\n24\n42\n7E\n42\n42\n42\n00\nENDCHAR\nENDFONT\n""")
     with wave.open(str(ASSETS / "ping.wav"), "wb") as out:
         out.setnchannels(1); out.setsampwidth(1); out.setframerate(11025)
@@ -38,6 +40,8 @@ def main():
     (ASSETS / "beat.mid").write_bytes(b"MThd" + struct.pack(">IHHH",6,0,1,96) + b"MTrk" + struct.pack(">I",len(midi_track)) + midi_track)
     (ASSETS / "level.csv").write_text("0,1,2,3\n3,2,1,0\n")
     convert("image", ASSETS/"showcase.png", ASSETS/"showcase.fim")
+    convert("image", ASSETS/"showcase.pcx", ASSETS/"pcx.fim")
+    convert("image", ASSETS/"showcase.bmp", ASSETS/"bmp.fim")
     convert("sprite", ASSETS/"sprites.png", ASSETS/"sprites.fsp", "--frame", "16x16")
     convert("palette", ASSETS/"showcase.png", ASSETS/"showcase.fpl")
     convert("font", ASSETS/"ui.bdf", ASSETS/"ui.ffn")

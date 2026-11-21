@@ -107,8 +107,10 @@ steps should favour small, visible demos that harden reusable library pieces.
 
 - [x] **Asset pipeline** — host-side conversion from authoring formats into
   Freak-native palettes, images, sprite sheets, fonts, maps, WAV sound banks,
-  and F3M 3D models; runtime loaders consume only those compact assets.
-- [ ] **Image tools** — PCX/BMP loading, palette quantisation/dithering,
+  F3M 3D models, and IMF/FTR music (including MIDI-to-tracker conversion);
+  runtime loaders consume only those compact assets, demonstrated by the
+  disk-loaded Asset loading gallery.
+- [x] **Image tools** — PCX/BMP loading, palette quantisation/dithering,
   sprite-sheet slicing, and transparent-colour handling.
 - [ ] **Build ergonomics** — named demo targets, dependency generation,
   incremental builds, release/debug profiles, and a one-command clean build.

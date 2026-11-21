@@ -9,8 +9,8 @@ DOS build is made.
 
 | Asset | Freak format | Runtime owner | Authoring input |
 | --- | --- | --- | --- |
-| Indexed image / palette | `FIM1` | `render/image` | PNG, BMP, TGA |
-| Sprite sheet | `FSP1` | `render/sprite` | PNG, BMP, TGA plus frame size |
+| Indexed image / palette | `FIM1` | `render/image` | PNG, BMP, TGA, PCX |
+| Sprite sheet | `FSP1` | `render/sprite` | PNG, BMP, TGA, PCX plus frame size |
 | Bitmap font | `FFN1` | `render/font` | BDF or bitmap sheet |
 | Tile map | `FMP1` | `2d/tilemap` | TMX/JSON or CSV |
 | PCM sound bank | `FSBK` | `audio/asset` | WAV |
