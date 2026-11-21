@@ -41,6 +41,7 @@
 #include "render/palette.h"
 #include "render/sprite.h"
 #include "render/image.h"
+#include "render/asset.h"
 #include "render/font.h"
 #include "render/debug.h"
 #include "render/transit.h"

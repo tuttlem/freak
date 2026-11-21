@@ -8,6 +8,7 @@
 #include "demoray.h"
 #include "demotol3.h"
 #include "demomat3.h"
+#include "demoasst.h"
 #include "demos/democom.h"
 
 #define DEMO_QUIT 17
@@ -21,6 +22,7 @@
 #define DEMO_MODEL3D 35
 #define DEMO_CAMERA3D 36
 #define DEMO_MATERIAL3D 37
+#define DEMO_ASSETS 38
 extern int freak_demo_texture_gallery(void);
 extern int freak_demo_utilities(void);
 extern int freak_demo_ui(void);
@@ -60,8 +62,9 @@ static const struct freak_menu tmenu = {"Textures", titems, 2};
 static const struct freak_menu_item uitems[] = {
     I("Sprites, fonts & transitions", 9), I("UI controls", 10),
     I("PC Speaker: music & effects", 25), I("Sound Blaster: PCM scale", 26),
-    I("MIDI: MPU-401 scale", 27),         I("Back", FREAK_MENU_BACK)};
-static const struct freak_menu umenu = {"Utilities", uitems, 6};
+    I("MIDI: MPU-401 scale", 27), I("Asset loading", DEMO_ASSETS),
+    I("Back", FREAK_MENU_BACK)};
+static const struct freak_menu umenu = {"Utilities", uitems, 7};
 static const struct freak_menu_item eitems[] = {
     I("Palette fades & cycling", 18),
     I("Blend modes", 19),
@@ -191,6 +194,8 @@ static void run(int a) {
         freak_demo_sound_blaster(&context);
     } else if (a == 27) {
         freak_demo_midi(&context);
+    } else if (a == DEMO_ASSETS) {
+        freak_demo_assets();
     }
     freak_mouse_show();
     freak_input_clear_events();

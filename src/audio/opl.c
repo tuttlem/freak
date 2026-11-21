@@ -1,6 +1,22 @@
 #include <conio.h>
 
 #include "opl.h"
+#include <stdio.h>
+#include <malloc.h>
+
+void freak_imf_asset_init(struct freak_imf_asset *asset) { if (asset) { asset->data=0; asset->length=0; } }
+void freak_imf_asset_destroy(struct freak_imf_asset *asset) { if (!asset) return; if (asset->data) free(asset->data); freak_imf_asset_init(asset); }
+int freak_imf_asset_load(struct freak_imf_asset *asset, const char *filename) {
+    FILE *file; long length;
+    if (!asset || !filename) return 0;
+    freak_imf_asset_destroy(asset); file=fopen(filename,"rb"); if(!file) return 0;
+    fseek(file,0,SEEK_END); length=ftell(file); fseek(file,0,SEEK_SET);
+    if (length < 4 || (length & 3) || !(asset->data=(uint8_t *)malloc((unsigned long)length)) ||
+        fread(asset->data,1,(unsigned long)length,file)!=(unsigned long)length) {
+        fclose(file); freak_imf_asset_destroy(asset); return 0;
+    }
+    fclose(file); asset->length=(uint32_t)length; return 1;
+}
 
 #define OPL_ADDRESS 0x388
 #define OPL_DATA 0x389

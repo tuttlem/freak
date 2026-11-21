@@ -21,6 +21,7 @@ file bin\demoshd
 file bin\demoray
 file bin\demotool
 file bin\demomat
+file bin\demoasset
 file bin\demospr
 file bin\demotile
 file bin\demotop
@@ -42,6 +43,7 @@ file bin\draw
 file bin\palette
 file bin\sprite
 file bin\image
+file bin\rasset
 file bin\font
 file bin\debug
 file bin\transit

@@ -105,8 +105,9 @@ steps should favour small, visible demos that harden reusable library pieces.
 
 ## Tooling and quality
 
-- [ ] **Asset pipeline** — host-side conversion for palettes, sprites, fonts,
-  maps, and WAV samples into DOS-friendly binary assets.
+- [x] **Asset pipeline** — host-side conversion from authoring formats into
+  Freak-native palettes, images, sprite sheets, fonts, maps, WAV sound banks,
+  and F3M 3D models; runtime loaders consume only those compact assets.
 - [ ] **Image tools** — PCX/BMP loading, palette quantisation/dithering,
   sprite-sheet slicing, and transparent-colour handling.
 - [ ] **Build ergonomics** — named demo targets, dependency generation,

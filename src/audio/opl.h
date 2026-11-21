@@ -13,6 +13,10 @@ struct freak_imf_song {
     uint8_t loop;
     uint8_t playing;
 };
+struct freak_imf_asset { uint8_t *data; uint32_t length; };
+void freak_imf_asset_init(struct freak_imf_asset *asset);
+void freak_imf_asset_destroy(struct freak_imf_asset *asset);
+int freak_imf_asset_load(struct freak_imf_asset *asset, const char *filename);
 
 uint8_t freak_opl_available(void);
 void freak_opl_write(uint8_t reg, uint8_t value);

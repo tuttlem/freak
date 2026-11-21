@@ -49,6 +49,9 @@ IF ERRORLEVEL 1 GOTO DONE
 call wcc386 /d2 /3s src\render\image.c -fo=bin\image.obj
 IF ERRORLEVEL 1 GOTO DONE
 
+call wcc386 /d2 /3s src\render\asset.c -fo=bin\rasset.obj
+IF ERRORLEVEL 1 GOTO DONE
+
 call wcc386 /d2 /3s src\render\font.c -fo=bin\font.obj
 IF ERRORLEVEL 1 GOTO DONE
 

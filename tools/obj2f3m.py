@@ -21,7 +21,8 @@ def main(source, target):
             face = fields[1:]
             for tri in ((face[0], face[n], face[n + 1]) for n in range(1, len(face) - 1)):
                 for ref in tri:
-                    key = tuple(int(value or 0) for value in ref.split("/"))
+                    parts = (ref.split("/") + ["", ""])[:3]
+                    key = tuple(int(value or 0) for value in parts)
                     if key not in lookup:
                         p = positions[key[0] - 1]; uv = texcoords[key[1] - 1] if key[1] else (0, 0)
                         normal = normals[key[2] - 1] if key[2] else (0, 0, 1)

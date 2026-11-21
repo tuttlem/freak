@@ -1,5 +1,45 @@
 #include "font.h"
 #include "draw.h"
+#include <stdio.h>
+#include <malloc.h>
+#include <string.h>
+
+void freak_font_asset_init(struct freak_font_asset *asset) {
+    if (!asset) return;
+    asset->storage = 0;
+    asset->font.bits = 0; asset->font.width = asset->font.height = 0;
+    asset->font.first = asset->font.count = 0;
+}
+
+void freak_font_asset_destroy(struct freak_font_asset *asset) {
+    if (!asset) return;
+    if (asset->storage) free(asset->storage);
+    freak_font_asset_init(asset);
+}
+
+int freak_font_asset_load(struct freak_font_asset *asset, const char *filename) {
+    FILE *file;
+    char magic[4];
+    unsigned long bytes;
+    int width, height, first, count;
+    if (!asset || !filename) return 0;
+    freak_font_asset_destroy(asset);
+    file = fopen(filename, "rb"); if (!file) return 0;
+    if (fread(magic, 1, 4, file) != 4 || memcmp(magic, "FFN1", 4) ||
+        (width = fgetc(file)) < 1 || width > 8 ||
+        (height = fgetc(file)) < 1 || (first = fgetc(file)) == EOF ||
+        (count = fgetc(file)) < 1) { fclose(file); return 0; }
+    bytes = (unsigned long)height * count;
+    asset->storage = (uint8_t *)malloc(bytes);
+    if (!asset->storage || fread(asset->storage, 1, bytes, file) != bytes) {
+        fclose(file); freak_font_asset_destroy(asset); return 0;
+    }
+    fclose(file);
+    asset->font.bits = asset->storage; asset->font.width = (uint8_t)width;
+    asset->font.height = (uint8_t)height; asset->font.first = (uint8_t)first;
+    asset->font.count = (uint8_t)count;
+    return 1;
+}
 
 void freak_font_char(uint8_t *buffer, int x, int y,
                      const struct freak_font *font, char character,

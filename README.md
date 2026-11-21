@@ -30,6 +30,15 @@ clouds, marble, animated plasma, and animated fire. Press any key to leave.
 The launcher uses `W`/`S` or the arrow keys to select an item and Enter to
 open it. Escape returns to the previous menu, or exits from the root menu.
 
+## Asset pipeline
+
+Freak games load compact native assets, while `tools/freak_asset.py` performs
+host-side conversion. Run `make assets` to regenerate the included sample
+pack, or use `python3 tools/freak_asset.py --help` for the converter commands.
+`make demo` always regenerates those assets first. The launcher’s **Utilities
+→ Asset loading** gallery loads the generated image, sprites, font, sound
+bank, tracker/IMF music data, and F3M model directly from `test/assets/`.
+
 Plasma takes four mutable byte phase counters (`c1` through `c4`) and advances
 them at independent rates. `freak_texture_smudge_up` is the shared upward,
 cooling palette-ramp operation used for fire today and smoke tomorrow.

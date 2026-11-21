@@ -59,6 +59,8 @@ call wcc386 /d2 /3s test\demos\tool3d.c -fo=bin\demotool.obj >> bin\test.log
 IF ERRORLEVEL 1 GOTO FAIL
 call wcc386 /d2 /3s test\demos\mat3d.c -fo=bin\demomat.obj >> bin\test.log
 IF ERRORLEVEL 1 GOTO FAIL
+call wcc386 /d2 /3s test\demos\assets.c -fo=bin\demoasset.obj >> bin\test.log
+IF ERRORLEVEL 1 GOTO FAIL
 call wcc386 /d2 /3s test\demos\sprites.c -fo=bin\demospr.obj >> bin\test.log
 IF ERRORLEVEL 1 GOTO FAIL
 call wcc386 /d2 /3s test\demos\tilemap.c -fo=bin\demotile.obj >> bin\test.log

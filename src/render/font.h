@@ -12,6 +12,16 @@ struct freak_text_size {
     int height;
 };
 
+/* FFN1 is emitted by tools/freak_asset.py font. */
+struct freak_font_asset {
+    struct freak_font font;
+    uint8_t *storage;
+};
+
+void freak_font_asset_init(struct freak_font_asset *asset);
+void freak_font_asset_destroy(struct freak_font_asset *asset);
+int freak_font_asset_load(struct freak_font_asset *asset, const char *filename);
+
 void freak_font_char(uint8_t *buffer, int x, int y,
                      const struct freak_font *font, char character,
                      uint8_t colour);
